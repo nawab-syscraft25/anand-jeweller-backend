@@ -164,11 +164,11 @@ cython_debug/
 *.code-workspace
 
 # Database files
-*.db
+# *.db
 *.sqlite
 *.sqlite3
-gold_rates.db
-anand_jewels.db
+# gold_rates.db
+# anand_jewels.db
 
 # Uploaded files and media
 static/images/guides/*

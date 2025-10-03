@@ -28,8 +28,9 @@ def get_db():
 
 # Initialize database
 def init_db():
-    """Create tables and seed admin user, sample stores, and sample guides"""
-    from models import AdminUser, Store, Guide
+    """Create tables and seed admin user, sample stores, sample guides, and sample gold rates"""
+    from models import AdminUser, Store, Guide, GoldRate
+    from datetime import datetime, timedelta
     import bcrypt
     
     # Create all tables
@@ -57,6 +58,37 @@ def init_db():
             print("Default admin user created (username: admin, password: admin123)")
         else:
             print("Admin user already exists")
+        
+        # Check if sample gold rates exist
+        rates_exist = db.query(GoldRate).first()
+        
+        if not rates_exist:
+            # Create sample gold rate entry with all three purities
+            current_time = datetime.now()
+            sample_rate = GoldRate(
+                # 24K rates
+                gold_24k_new_rate=7200.0,      # 24K selling price
+                gold_24k_exchange_rate=6800.0, # 24K exchange price
+                gold_24k_making_charges=800.0, # 24K making charges
+                
+                # 22K rates  
+                gold_22k_new_rate=6600.0,      # 22K selling price
+                gold_22k_exchange_rate=6200.0, # 22K exchange price
+                gold_22k_making_charges=600.0, # 22K making charges
+                
+                # 18K rates
+                gold_18k_new_rate=5400.0,      # 18K selling price
+                gold_18k_exchange_rate=5000.0, # 18K exchange price
+                gold_18k_making_charges=400.0, # 18K making charges
+                
+                release_datetime=current_time
+            )
+            
+            db.add(sample_rate)
+            db.commit()
+            print("Sample gold rates created with all three purities (24K, 22K, 18K)")
+        else:
+            print("Gold rates already exist")
         
         # Check if stores exist
         stores_exist = db.query(Store).first()

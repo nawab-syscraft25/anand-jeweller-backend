@@ -109,9 +109,9 @@
         <div class="row align-items-center">
             <div class="col-md-8 mb-2 mb-md-0">
                 <h5 class="mb-1 fw-bold">
-                    <i class="bi bi-clock-history me-2 text-primary"></i>Recent Gold Rates
+                    <i class="bi bi-gem me-2" style="color: var(--btn-warning);"></i>Current Gold Rates
                 </h5>
-                <small class="text-muted">Latest market updates and price changes</small>
+                <small style="color: var(--text-secondary);">24K, 22K & 18K - Selling, Exchange & Making Charges</small>
             </div>
             <div class="col-md-4 text-md-end">
                 <div class="btn-group">
@@ -127,82 +127,114 @@
     </div>
     
     <div class="card-body p-0">
-        {% if latest_rates %}
+        {% if latest_rate %}
         <div class="table-responsive">
             <table class="table mb-0">
                 <thead>
                     <tr>
-                        <th>
-                            <i class="bi bi-award me-1 text-warning"></i>Purity
+                        <th rowspan="2" class="align-middle">
+                            <i class="bi bi-award me-1" style="color: var(--btn-warning);"></i>Purity
                         </th>
-                        <th>
-                            <i class="bi bi-currency-rupee me-1 text-success"></i>Current Rate
+                        <th colspan="3" class="text-center" style="border-bottom: 1px solid var(--border);">
+                            <i class="bi bi-currency-rupee me-1" style="color: var(--btn-success);"></i>Rates (₹/gram)
                         </th>
-                        <th class="d-none d-md-table-cell">
-                            <i class="bi bi-arrow-clockwise me-1 text-muted"></i>Previous Rate
+                        <th rowspan="2" class="align-middle d-none d-lg-table-cell">
+                            <i class="bi bi-calendar-event me-1" style="color: var(--btn-primary);"></i>Updated
                         </th>
-                        <th class="d-none d-lg-table-cell">
-                            <i class="bi bi-calendar-event me-1 text-info"></i>Last Updated
-                        </th>
-                        <th>
-                            <i class="bi bi-graph-up-arrow me-1 text-warning"></i>Change
-                        </th>
-                        <th class="d-none d-md-table-cell">Actions</th>
+                        <th rowspan="2" class="align-middle d-none d-md-table-cell">Actions</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">Selling</th>
+                        <th class="text-center">Exchange</th>
+                        <th class="text-center">Making</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for rate in latest_rates %}
-                    <tr class="rate-row">
+                    <!-- 24K Gold Row -->
+                    <tr>
                         <td>
                             <div class="d-flex align-items-center">
-                                <div class="metal-icon {% if 'Gold' in rate.purity %}gold{% else %}silver{% endif %}">
-                                    <i class="bi bi-{% if 'Gold' in rate.purity %}star{% if '24K' in rate.purity %}-fill{% endif %}{% else %}gem{% endif %}"></i>
+                                <div class="metal-icon gold">
+                                    <i class="bi bi-star-fill"></i>
                                 </div>
                                 <div>
-                                    <div class="fw-semibold">{{ rate.purity }}</div>
+                                    <div class="fw-semibold">24K Gold</div>
                                     <small class="text-muted">Premium Quality</small>
                                 </div>
                             </div>
                         </td>
-                        <td>
-                            <div class="price-current">₹{{ rate.new_rate_per_gram|round(2) }}</div>
-                            <small class="text-muted">per gram</small>
+                        <td class="text-center">
+                            <div class="price-current">₹{{ latest_rate.gold_24k_new_rate|round(2) }}</div>
                         </td>
-                        <td class="d-none d-md-table-cell">
-                            <div class="price-previous">₹{{ rate.old_rate_per_gram|round(2) }}</div>
+                        <td class="text-center">
+                            <div class="price-previous">₹{{ latest_rate.gold_24k_exchange_rate|round(2) }}</div>
                         </td>
-                        <td class="d-none d-lg-table-cell">
-                            <div class="fw-semibold">{{ rate.release_datetime.strftime('%b %d') }}</div>
-                            <small class="text-muted">{{ rate.release_datetime.strftime('%H:%M') }}</small>
+                        <td class="text-center">
+                            <div class="fw-semibold" style="color: var(--btn-warning);">₹{{ latest_rate.gold_24k_making_charges|round(2) }}</div>
                         </td>
-                        <td>
-                            {% set change = rate.new_rate_per_gram - rate.old_rate_per_gram %}
-                            {% if change > 0 %}
-                                <span class="price-change positive">
-                                    <i class="bi bi-arrow-up me-1"></i>+₹{{ change|round(2) }}
-                                </span>
-                            {% elif change < 0 %}
-                                <span class="price-change negative">
-                                    <i class="bi bi-arrow-down me-1"></i>₹{{ change|round(2) }}
-                                </span>
-                            {% else %}
-                                <span class="price-change neutral">
-                                    <i class="bi bi-dash me-1"></i>No Change
-                                </span>
-                            {% endif %}
+                        <td class="d-none d-lg-table-cell text-center" rowspan="3">
+                            <div class="fw-semibold">{{ latest_rate.release_datetime.strftime('%b %d') }}</div>
+                            <small class="text-muted">{{ latest_rate.release_datetime.strftime('%H:%M') }}</small>
                         </td>
-                        <td class="d-none d-md-table-cell">
+                        <td class="d-none d-md-table-cell text-center" rowspan="3">
                             <div class="action-buttons">
-                                <button class="btn-action edit" title="Edit">
+                                <a href="/admin/gold-rates/edit/{{ latest_rate.id }}" class="btn-action edit" title="Edit Rates">
                                     <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn-action view" title="View Details">
+                                </a>
+                                <a href="/admin/gold-rates" class="btn-action view" title="View All Rates">
                                     <i class="bi bi-eye"></i>
-                                </button>
+                                </a>
                             </div>
                         </td>
                     </tr>
-                    {% endfor %}
+                    
+                    <!-- 22K Gold Row -->
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="metal-icon gold">
+                                    <i class="bi bi-star"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">22K Gold</div>
+                                    <small class="text-muted">Standard Quality</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="price-current">₹{{ latest_rate.gold_22k_new_rate|round(2) }}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="price-previous">₹{{ latest_rate.gold_22k_exchange_rate|round(2) }}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="fw-semibold" style="color: var(--btn-warning);">₹{{ latest_rate.gold_22k_making_charges|round(2) }}</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- 18K Gold Row -->
+                    <tr style="border-bottom: 2px solid var(--border);">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="metal-icon gold">
+                                    <i class="bi bi-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">18K Gold</div>
+                                    <small class="text-muted">Designer Quality</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="price-current">₹{{ latest_rate.gold_18k_new_rate|round(2) }}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="price-previous">₹{{ latest_rate.gold_18k_exchange_rate|round(2) }}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="fw-semibold" style="color: var(--btn-warning);">₹{{ latest_rate.gold_18k_making_charges|round(2) }}</div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -485,6 +517,39 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.stat-card').forEach((card, index) => {
         card.style.animationDelay = `${index * 0.1}s`;
     });
+
+    // JWT-enabled admin dashboard functionality
+    async function refreshStats() {
+        if (!window.jwtToken) return;
+        
+        try {
+            const response = await window.apiCall('/api/admin/statistics');
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Update statistics on dashboard
+                const totalRatesElement = document.querySelector('[data-target]');
+                if (totalRatesElement && data.total_rates) {
+                    totalRatesElement.textContent = data.total_rates;
+                }
+                
+                console.log('Statistics refreshed via JWT API:', data);
+            }
+        } catch (error) {
+            console.error('Failed to refresh statistics:', error);
+        }
+    }
+    
+    // Auto-refresh stats every 5 minutes if JWT token is available
+    if (window.jwtToken) {
+        setInterval(refreshStats, 5 * 60 * 1000);
+        
+        // Add refresh button functionality
+        const refreshButton = document.getElementById('refresh-stats');
+        if (refreshButton) {
+            refreshButton.addEventListener('click', refreshStats);
+        }
+    }
 });
 </script>
 {% endblock %}

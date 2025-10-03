@@ -34,43 +34,48 @@
                     <table class="table">
                         <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Purity</th>
-                        <th>New Rate (₹/gram)</th>
-                        <th>Old Rate (Exchange) (₹/gram)</th>
-                        <th>New Rate Change</th>
-                        <th>Release Date</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
+                        <th rowspan="2" class="align-middle">ID</th>
+                        <th rowspan="2" class="align-middle">Release Date</th>
+                        <th colspan="3" class="text-center bg-warning">24K Gold (₹/gram)</th>
+                        <th colspan="3" class="text-center" style="background-color: #f59e0b; color: white;">22K Gold (₹/gram)</th>
+                        <th colspan="3" class="text-center" style="background-color: #10b981; color: white;">18K Gold (₹/gram)</th>
+                        <th rowspan="2" class="align-middle">Created At</th>
+                        <th rowspan="2" class="align-middle">Actions</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center bg-light">Selling</th>
+                        <th class="text-center bg-light">Exchange</th>
+                        <th class="text-center bg-light">Making</th>
+                        <th class="text-center bg-light">Selling</th>
+                        <th class="text-center bg-light">Exchange</th>
+                        <th class="text-center bg-light">Making</th>
+                        <th class="text-center bg-light">Selling</th>
+                        <th class="text-center bg-light">Exchange</th>
+                        <th class="text-center bg-light">Making</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for rate in gold_rates %}
                     <tr>
-                        <td>{{ rate.id }}</td>
-                        <td>
-                            <span class="badge bg-secondary">{{ rate.purity }}</span>
-                        </td>
-                        <td>₹{{ "%.2f"|format(rate.new_rate_per_gram) }}</td>
-                        <td>₹{{ "%.2f"|format(rate.old_rate_per_gram) }}</td>
-                        <td>
-                            {% set change = rate.new_rate_per_gram - rate.old_rate_per_gram %}
-                            {% if change > 0 %}
-                                <span class="badge bg-success">
-                                    <i class="bi bi-arrow-up"></i> +₹{{ "%.2f"|format(change) }}
-                                </span>
-                            {% elif change < 0 %}
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-arrow-down"></i> ₹{{ "%.2f"|format(change) }}
-                                </span>
-                            {% else %}
-                                <span class="badge bg-secondary">
-                                    <i class="bi bi-dash"></i> No Change
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>{{ rate.release_datetime.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td>{{ rate.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td><strong>{{ rate.id }}</strong></td>
+                        <td><strong>{{ rate.release_datetime.strftime('%Y-%m-%d %H:%M') }}</strong></td>
+                        
+                        <!-- 24K Gold Rates -->
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_24k_new_rate) }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_24k_exchange_rate) }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_24k_making_charges) }}</td>
+                        
+                        <!-- 22K Gold Rates -->
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_22k_new_rate) }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_22k_exchange_rate) }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_22k_making_charges) }}</td>
+                        
+                        <!-- 18K Gold Rates -->
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_18k_new_rate) }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_18k_exchange_rate) }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(rate.gold_18k_making_charges) }}</td>
+                        
+                        <td><small class="text-muted">{{ rate.created_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
                                 <a href="/admin/gold-rates/edit/{{ rate.id }}" class="btn btn-outline-primary">

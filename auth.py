@@ -1,8 +1,10 @@
 import bcrypt
+from datetime import timedelta
 from fastapi import Request, HTTPException, status
 from sqlalchemy.orm import Session
 from models import AdminUser
 from database import get_db
+from jwt_auth import JWTAuth, ACCESS_TOKEN_EXPIRE_MINUTES
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash"""
@@ -36,9 +38,20 @@ def get_current_user(request: Request, db: Session) -> AdminUser:
     return user
 
 def login_user(request: Request, user: AdminUser):
-    """Login user by setting session"""
+    """Login user by setting session and generating JWT token"""
     request.session["user_id"] = user.id
     request.session["username"] = user.username
+    
+    # Generate JWT token for API access
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = JWTAuth.create_access_token(
+        data={"sub": user.username, "user_id": user.id},
+        expires_delta=access_token_expires
+    )
+    
+    # Store token in session for easy access
+    request.session["access_token"] = access_token
+    return access_token
 
 def logout_user(request: Request):
     """Logout user by clearing session"""

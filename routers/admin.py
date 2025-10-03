@@ -9,6 +9,7 @@ from typing import Optional
 from database import get_db
 from models import AdminUser, GoldRate, Store, ContactEnquiry, Guide
 from auth import authenticate_user, login_user, logout_user, get_current_user, is_authenticated
+from jwt_auth import require_admin_auth
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -38,7 +39,12 @@ async def login(
             }
         )
     
-    login_user(request, user)
+    # Login user and get JWT token
+    access_token = login_user(request, user)
+    
+    # Store token in session for JavaScript access
+    request.session["jwt_token"] = access_token
+    
     return RedirectResponse(url="/admin", status_code=302)
 
 # Logout
@@ -51,19 +57,18 @@ async def logout(request: Request):
 @router.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
 ):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login", status_code=302)
-    
     # Get stats for dashboard
     total_rates = db.query(GoldRate).count()
     total_stores = db.query(Store).count()
     total_enquiries = db.query(ContactEnquiry).count()
     total_guides = db.query(Guide).count()
-    latest_rates = db.query(GoldRate).order_by(desc(GoldRate.release_datetime)).limit(5).all()
+    latest_rate = db.query(GoldRate).order_by(desc(GoldRate.release_datetime)).first()
     
-    current_user = get_current_user(request, db)
+    # Get JWT token from session for frontend use
+    jwt_token = request.session.get("jwt_token", "")
     
     return templates.TemplateResponse(
         "dashboard.html", 
@@ -74,7 +79,8 @@ async def admin_dashboard(
             "total_stores": total_stores,
             "total_enquiries": total_enquiries,
             "total_guides": total_guides,
-            "latest_rates": latest_rates
+            "latest_rate": latest_rate,
+            "jwt_token": jwt_token
         }
     )
 
@@ -82,20 +88,19 @@ async def admin_dashboard(
 @router.get("/admin/gold-rates", response_class=HTMLResponse)
 async def list_gold_rates(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
 ):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login", status_code=302)
-    
     gold_rates = db.query(GoldRate).order_by(desc(GoldRate.release_datetime)).all()
-    current_user = get_current_user(request, db)
+    jwt_token = request.session.get("jwt_token", "")
     
     return templates.TemplateResponse(
         "gold_rates/list.html",
         {
             "request": request,
             "user": current_user,
-            "gold_rates": gold_rates
+            "gold_rates": gold_rates,
+            "jwt_token": jwt_token
         }
     )
 
@@ -103,18 +108,17 @@ async def list_gold_rates(
 @router.get("/admin/gold-rates/add", response_class=HTMLResponse)
 async def add_gold_rate_form(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
 ):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login", status_code=302)
-    
-    current_user = get_current_user(request, db)
+    jwt_token = request.session.get("jwt_token", "")
     
     return templates.TemplateResponse(
         "gold_rates/add.html",
         {
             "request": request,
-            "user": current_user
+            "user": current_user,
+            "jwt_token": jwt_token
         }
     )
 
@@ -122,11 +126,22 @@ async def add_gold_rate_form(
 @router.post("/admin/gold-rates/add")
 async def add_gold_rate(
     request: Request,
-    purity: str = Form(...),
-    new_rate_per_gram: float = Form(...),
-    old_rate_per_gram: float = Form(...),
+    # 24K Gold rates
+    gold_24k_new_rate: float = Form(...),
+    gold_24k_exchange_rate: float = Form(...),
+    gold_24k_making_charges: float = Form(...),
+    # 22K Gold rates
+    gold_22k_new_rate: float = Form(...),
+    gold_22k_exchange_rate: float = Form(...),
+    gold_22k_making_charges: float = Form(...),
+    # 18K Gold rates
+    gold_18k_new_rate: float = Form(...),
+    gold_18k_exchange_rate: float = Form(...),
+    gold_18k_making_charges: float = Form(...),
+    # Common fields
     release_datetime: str = Form(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
 ):
     if not is_authenticated(request):
         return RedirectResponse(url="/admin/login", status_code=302)
@@ -135,9 +150,8 @@ async def add_gold_rate(
         # Parse datetime
         release_dt = datetime.fromisoformat(release_datetime.replace('T', ' '))
         
-        # Check for duplicates
+        # Check for duplicates (by release datetime)
         existing = db.query(GoldRate).filter(
-            GoldRate.purity == purity,
             GoldRate.release_datetime == release_dt
         ).first()
         
@@ -148,15 +162,22 @@ async def add_gold_rate(
                 {
                     "request": request,
                     "user": current_user,
-                    "error": f"A rate for {purity} already exists for this date and time"
+                    "error": f"A gold rate already exists for this date and time",
+                    "jwt_token": request.session.get("jwt_token", "")
                 }
             )
         
-        # Create new gold rate
+        # Create new consolidated gold rate
         gold_rate = GoldRate(
-            purity=purity,
-            new_rate_per_gram=new_rate_per_gram,
-            old_rate_per_gram=old_rate_per_gram,
+            gold_24k_new_rate=gold_24k_new_rate,
+            gold_24k_exchange_rate=gold_24k_exchange_rate,
+            gold_24k_making_charges=gold_24k_making_charges,
+            gold_22k_new_rate=gold_22k_new_rate,
+            gold_22k_exchange_rate=gold_22k_exchange_rate,
+            gold_22k_making_charges=gold_22k_making_charges,
+            gold_18k_new_rate=gold_18k_new_rate,
+            gold_18k_exchange_rate=gold_18k_exchange_rate,
+            gold_18k_making_charges=gold_18k_making_charges,
             release_datetime=release_dt
         )
         
@@ -172,7 +193,8 @@ async def add_gold_rate(
             {
                 "request": request,
                 "user": current_user,
-                "error": f"Error adding gold rate: {str(e)}"
+                "error": f"Error adding gold rate: {str(e)}",
+                "jwt_token": request.session.get("jwt_token", "")
             }
         )
 
@@ -192,12 +214,15 @@ async def edit_gold_rate_form(
     
     current_user = get_current_user(request, db)
     
+    jwt_token = request.session.get("jwt_token", "")
+    
     return templates.TemplateResponse(
         "gold_rates/edit.html",
         {
             "request": request,
             "user": current_user,
-            "gold_rate": gold_rate
+            "gold_rate": gold_rate,
+            "jwt_token": jwt_token
         }
     )
 
@@ -206,9 +231,19 @@ async def edit_gold_rate_form(
 async def edit_gold_rate(
     request: Request,
     rate_id: int,
-    purity: str = Form(...),
-    new_rate_per_gram: float = Form(...),
-    old_rate_per_gram: float = Form(...),
+    # 24K Gold rates
+    gold_24k_new_rate: float = Form(...),
+    gold_24k_exchange_rate: float = Form(...),
+    gold_24k_making_charges: float = Form(...),
+    # 22K Gold rates
+    gold_22k_new_rate: float = Form(...),
+    gold_22k_exchange_rate: float = Form(...),
+    gold_22k_making_charges: float = Form(...),
+    # 18K Gold rates
+    gold_18k_new_rate: float = Form(...),
+    gold_18k_exchange_rate: float = Form(...),
+    gold_18k_making_charges: float = Form(...),
+    # Common fields
     release_datetime: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -225,7 +260,6 @@ async def edit_gold_rate(
         
         # Check for duplicates (excluding current record)
         existing = db.query(GoldRate).filter(
-            GoldRate.purity == purity,
             GoldRate.release_datetime == release_dt,
             GoldRate.id != rate_id
         ).first()
@@ -238,14 +272,21 @@ async def edit_gold_rate(
                     "request": request,
                     "user": current_user,
                     "gold_rate": gold_rate,
-                    "error": f"A rate for {purity} already exists for this date and time"
+                    "error": f"A gold rate already exists for this date and time",
+                    "jwt_token": request.session.get("jwt_token", "")
                 }
             )
         
-        # Update gold rate
-        gold_rate.purity = purity
-        gold_rate.new_rate_per_gram = new_rate_per_gram
-        gold_rate.old_rate_per_gram = old_rate_per_gram
+        # Update consolidated gold rate
+        gold_rate.gold_24k_new_rate = gold_24k_new_rate
+        gold_rate.gold_24k_exchange_rate = gold_24k_exchange_rate
+        gold_rate.gold_24k_making_charges = gold_24k_making_charges
+        gold_rate.gold_22k_new_rate = gold_22k_new_rate
+        gold_rate.gold_22k_exchange_rate = gold_22k_exchange_rate
+        gold_rate.gold_22k_making_charges = gold_22k_making_charges
+        gold_rate.gold_18k_new_rate = gold_18k_new_rate
+        gold_rate.gold_18k_exchange_rate = gold_18k_exchange_rate
+        gold_rate.gold_18k_making_charges = gold_18k_making_charges
         gold_rate.release_datetime = release_dt
         
         db.commit()
@@ -261,7 +302,8 @@ async def edit_gold_rate(
                 "request": request,
                 "user": current_user,
                 "gold_rate": gold_rate,
-                "error": f"Error updating gold rate: {str(e)}"
+                "error": f"Error updating gold rate: {str(e)}",
+                "jwt_token": request.session.get("jwt_token", "")
             }
         )
 

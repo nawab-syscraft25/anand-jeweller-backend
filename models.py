@@ -13,19 +13,32 @@ class GoldRate(Base):
     __tablename__ = "gold_rates"
     
     id = Column(Integer, primary_key=True, index=True)
-    purity = Column(String, nullable=False)  # "24K", "22K", "18K"
-    new_rate_per_gram = Column(Float, nullable=False)
-    old_rate_per_gram = Column(Float, nullable=False)
+    
+    # 24K Gold Rates
+    gold_24k_new_rate = Column(Float, nullable=False)  # 24K selling price per gram
+    gold_24k_exchange_rate = Column(Float, nullable=False)  # 24K exchange price per gram
+    gold_24k_making_charges = Column(Float, nullable=False, default=0.0)  # 24K making charges per gram
+    
+    # 22K Gold Rates
+    gold_22k_new_rate = Column(Float, nullable=False)  # 22K selling price per gram
+    gold_22k_exchange_rate = Column(Float, nullable=False)  # 22K exchange price per gram
+    gold_22k_making_charges = Column(Float, nullable=False, default=0.0)  # 22K making charges per gram
+    
+    # 18K Gold Rates
+    gold_18k_new_rate = Column(Float, nullable=False)  # 18K selling price per gram
+    gold_18k_exchange_rate = Column(Float, nullable=False)  # 18K exchange price per gram
+    gold_18k_making_charges = Column(Float, nullable=False, default=0.0)  # 18K making charges per gram
+    
     release_datetime = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=func.now(), nullable=False)
     
-    # Ensure no duplicate entries for same purity + release_datetime
+    # Ensure no duplicate entries for same release_datetime
     __table_args__ = (
-        UniqueConstraint('purity', 'release_datetime', name='_purity_release_datetime_uc'),
+        UniqueConstraint('release_datetime', name='_release_datetime_uc'),
     )
     
     def __repr__(self):
-        return f"<GoldRate(purity='{self.purity}', new_rate={self.new_rate_per_gram}, release_datetime='{self.release_datetime}')>"
+        return f"<GoldRate(24K: ₹{self.gold_24k_new_rate}, 22K: ₹{self.gold_22k_new_rate}, 18K: ₹{self.gold_18k_new_rate}, released: {self.release_datetime})>"
 
 
 class Store(Base):

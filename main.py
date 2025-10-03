@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 import os
 
 # Import routers
-from routers import admin, api, stores
+from routers import admin, api, stores, admin_api
 
 # Import database initialization
 from database import init_db
@@ -38,6 +38,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Include routers
 app.include_router(admin.router, tags=["Admin Dashboard"])
+app.include_router(admin_api.router, tags=["Admin API (JWT)"])
 app.include_router(stores.router, tags=["Store Management"])
 app.include_router(api.router, tags=["Public API"])
 @app.get("/")

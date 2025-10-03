@@ -12,35 +12,47 @@ router = APIRouter()
 
 # Latest rates for all purities
 @router.get("/api/gold-rates/latest")
-async def get_latest_rates(db: Session = Depends(get_db)) -> Dict[str, Dict[str, Any]]:
-    """Get the latest gold rates for all purities"""
+async def get_latest_rates(db: Session = Depends(get_db)) -> Dict[str, Any]:
+    """Get the latest gold rates for all purities from consolidated structure"""
     
-    latest_rates = {}
-    purities = ["24K", "22K", "18K"]
+    # Get the single most recent consolidated gold rate entry
+    latest_rate = db.query(GoldRate).order_by(desc(GoldRate.release_datetime)).first()
     
-    for purity in purities:
-        latest_rate = db.query(GoldRate).filter(
-            GoldRate.purity == purity
-        ).order_by(desc(GoldRate.release_datetime)).first()
-        
-        if latest_rate:
-            latest_rates[purity] = {
-                "new_rate": latest_rate.new_rate_per_gram,
-                "old_rate": latest_rate.old_rate_per_gram,
-                "release_datetime": latest_rate.release_datetime.strftime("%Y-%m-%d")
+    if not latest_rate:
+        return {"message": "No gold rates available"}
+    
+    # Return consolidated structure with all three purities
+    return {
+        "release_datetime": latest_rate.release_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "created_at": latest_rate.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "gold_rates": {
+            "24K": {
+                "selling_rate": float(latest_rate.gold_24k_new_rate),
+                "exchange_rate": float(latest_rate.gold_24k_exchange_rate),
+                "making_charges": float(latest_rate.gold_24k_making_charges)
+            },
+            "22K": {
+                "selling_rate": float(latest_rate.gold_22k_new_rate),
+                "exchange_rate": float(latest_rate.gold_22k_exchange_rate),
+                "making_charges": float(latest_rate.gold_22k_making_charges)
+            },
+            "18K": {
+                "selling_rate": float(latest_rate.gold_18k_new_rate),
+                "exchange_rate": float(latest_rate.gold_18k_exchange_rate),
+                "making_charges": float(latest_rate.gold_18k_making_charges)
             }
-    
-    return latest_rates
+        }
+    }
 
 # History for last N days
 @router.get("/api/gold-rates/history/7d")
 async def get_7_day_history(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    """Get gold rates history for the last 7 days"""
+    """Get consolidated gold rates history for the last 7 days"""
     return await get_history_by_days(db, 7)
 
 @router.get("/api/gold-rates/history/30d")
 async def get_30_day_history(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    """Get gold rates history for the last 30 days"""
+    """Get consolidated gold rates history for the last 30 days"""
     return await get_history_by_days(db, 30)
 
 # History filtered by purity
@@ -50,7 +62,7 @@ async def get_history_by_purity(
     days: int = Query(7, description="Number of days to look back"),
     db: Session = Depends(get_db)
 ) -> List[Dict[str, Any]]:
-    """Get gold rates history for a specific purity"""
+    """Get gold rates history for a specific purity from consolidated structure"""
     
     # Validate purity
     if purity not in ["24K", "22K", "18K"]:
@@ -60,34 +72,54 @@ async def get_history_by_purity(
     end_date = datetime.now()
     start_date = end_date - timedelta(days=days)
     
-    # Query rates for specific purity
+    # Query consolidated rates within date range
     rates = db.query(GoldRate).filter(
         and_(
-            GoldRate.purity == purity,
             GoldRate.release_datetime >= start_date,
             GoldRate.release_datetime <= end_date
         )
     ).order_by(desc(GoldRate.release_datetime)).all()
     
-    return [
-        {
-            "purity": rate.purity,
-            "new_rate": rate.new_rate_per_gram,
-            "old_rate": rate.old_rate_per_gram,
-            "release_datetime": rate.release_datetime.strftime("%Y-%m-%d")
-        }
-        for rate in rates
-    ]
+    # Extract data for the specific purity from consolidated records
+    purity_history = []
+    for rate in rates:
+        if purity == "24K":
+            purity_data = {
+                "purity": "24K",
+                "selling_rate": float(rate.gold_24k_new_rate),
+                "exchange_rate": float(rate.gold_24k_exchange_rate),
+                "making_charges": float(rate.gold_24k_making_charges),
+                "release_datetime": rate.release_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        elif purity == "22K":
+            purity_data = {
+                "purity": "22K",
+                "selling_rate": float(rate.gold_22k_new_rate),
+                "exchange_rate": float(rate.gold_22k_exchange_rate),
+                "making_charges": float(rate.gold_22k_making_charges),
+                "release_datetime": rate.release_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        else:  # 18K
+            purity_data = {
+                "purity": "18K",
+                "selling_rate": float(rate.gold_18k_new_rate),
+                "exchange_rate": float(rate.gold_18k_exchange_rate),
+                "making_charges": float(rate.gold_18k_making_charges),
+                "release_datetime": rate.release_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        purity_history.append(purity_data)
+    
+    return purity_history
 
 # Helper function for history queries
 async def get_history_by_days(db: Session, days: int) -> List[Dict[str, Any]]:
-    """Get gold rates history for the specified number of days"""
+    """Get consolidated gold rates history for the specified number of days"""
     
     # Calculate date range
     end_date = datetime.now()
     start_date = end_date - timedelta(days=days)
     
-    # Query all rates within date range
+    # Query all consolidated rates within date range
     rates = db.query(GoldRate).filter(
         and_(
             GoldRate.release_datetime >= start_date,
@@ -95,12 +127,28 @@ async def get_history_by_days(db: Session, days: int) -> List[Dict[str, Any]]:
         )
     ).order_by(desc(GoldRate.release_datetime)).all()
     
+    # Convert each consolidated rate to the response format
     return [
         {
-            "purity": rate.purity,
-            "new_rate": rate.new_rate_per_gram,
-            "old_rate": rate.old_rate_per_gram,
-            "release_datetime": rate.release_datetime.strftime("%Y-%m-%d")
+            "release_datetime": rate.release_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": rate.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "gold_rates": {
+                "24K": {
+                    "selling_rate": float(rate.gold_24k_new_rate),
+                    "exchange_rate": float(rate.gold_24k_exchange_rate),
+                    "making_charges": float(rate.gold_24k_making_charges)
+                },
+                "22K": {
+                    "selling_rate": float(rate.gold_22k_new_rate),
+                    "exchange_rate": float(rate.gold_22k_exchange_rate),
+                    "making_charges": float(rate.gold_22k_making_charges)
+                },
+                "18K": {
+                    "selling_rate": float(rate.gold_18k_new_rate),
+                    "exchange_rate": float(rate.gold_18k_exchange_rate),
+                    "making_charges": float(rate.gold_18k_making_charges)
+                }
+            }
         }
         for rate in rates
     ]
@@ -110,6 +158,98 @@ async def get_history_by_days(db: Session, days: int) -> List[Dict[str, Any]]:
 async def get_available_purities() -> List[str]:
     """Get list of available gold purities"""
     return ["24K", "22K", "18K"]
+
+# New endpoint for simplified current rates
+@router.get("/api/gold-rates/current")
+async def get_current_rates_simple(db: Session = Depends(get_db)) -> Dict[str, Any]:
+    """Get current gold rates in simplified format"""
+    
+    latest_rate = db.query(GoldRate).order_by(desc(GoldRate.release_datetime)).first()
+    
+    if not latest_rate:
+        return {"message": "No gold rates available"}
+    
+    return {
+        "last_updated": latest_rate.release_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "rates": {
+            "24k_gold": {
+                "selling": float(latest_rate.gold_24k_new_rate),
+                "exchange": float(latest_rate.gold_24k_exchange_rate),
+                "making": float(latest_rate.gold_24k_making_charges)
+            },
+            "22k_gold": {
+                "selling": float(latest_rate.gold_22k_new_rate),
+                "exchange": float(latest_rate.gold_22k_exchange_rate),
+                "making": float(latest_rate.gold_22k_making_charges)
+            },
+            "18k_gold": {
+                "selling": float(latest_rate.gold_18k_new_rate),
+                "exchange": float(latest_rate.gold_18k_exchange_rate),
+                "making": float(latest_rate.gold_18k_making_charges)
+            }
+        }
+    }
+
+# Endpoint to get all historical records (paginated)
+@router.get("/api/gold-rates/all")
+async def get_all_rates(
+    page: int = Query(1, description="Page number (1-based)"),
+    limit: int = Query(10, description="Number of records per page"),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get all gold rate records with pagination"""
+    
+    # Calculate offset
+    offset = (page - 1) * limit
+    
+    # Get total count
+    total_count = db.query(GoldRate).count()
+    
+    # Get paginated records
+    rates = db.query(GoldRate).order_by(
+        desc(GoldRate.release_datetime)
+    ).offset(offset).limit(limit).all()
+    
+    # Calculate pagination info
+    total_pages = (total_count + limit - 1) // limit
+    has_next = page < total_pages
+    has_previous = page > 1
+    
+    return {
+        "pagination": {
+            "current_page": page,
+            "total_pages": total_pages,
+            "total_records": total_count,
+            "records_per_page": limit,
+            "has_next": has_next,
+            "has_previous": has_previous
+        },
+        "data": [
+            {
+                "id": rate.id,
+                "release_datetime": rate.release_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                "created_at": rate.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "gold_rates": {
+                    "24K": {
+                        "selling_rate": float(rate.gold_24k_new_rate),
+                        "exchange_rate": float(rate.gold_24k_exchange_rate),
+                        "making_charges": float(rate.gold_24k_making_charges)
+                    },
+                    "22K": {
+                        "selling_rate": float(rate.gold_22k_new_rate),
+                        "exchange_rate": float(rate.gold_22k_exchange_rate),
+                        "making_charges": float(rate.gold_22k_making_charges)
+                    },
+                    "18K": {
+                        "selling_rate": float(rate.gold_18k_new_rate),
+                        "exchange_rate": float(rate.gold_18k_exchange_rate),
+                        "making_charges": float(rate.gold_18k_making_charges)
+                    }
+                }
+            }
+            for rate in rates
+        ]
+    }
 
 # Pydantic models for request/response
 class ContactEnquiryCreate(BaseModel):

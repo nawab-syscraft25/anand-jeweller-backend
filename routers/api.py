@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, EmailStr, Field
 
 from database import get_db
@@ -12,7 +12,7 @@ router = APIRouter()
 
 # Latest rates for all purities
 @router.get("/api/gold-rates/latest")
-async def get_latest_rates(db: Session = Depends(get_db)) -> Dict[str, Dict[str, str]]:
+async def get_latest_rates(db: Session = Depends(get_db)) -> Dict[str, Dict[str, Any]]:
     """Get the latest gold rates for all purities"""
     
     latest_rates = {}
@@ -34,12 +34,12 @@ async def get_latest_rates(db: Session = Depends(get_db)) -> Dict[str, Dict[str,
 
 # History for last N days
 @router.get("/api/gold-rates/history/7d")
-async def get_7_day_history(db: Session = Depends(get_db)) -> List[Dict]:
+async def get_7_day_history(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """Get gold rates history for the last 7 days"""
     return await get_history_by_days(db, 7)
 
 @router.get("/api/gold-rates/history/30d")
-async def get_30_day_history(db: Session = Depends(get_db)) -> List[Dict]:
+async def get_30_day_history(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """Get gold rates history for the last 30 days"""
     return await get_history_by_days(db, 30)
 
@@ -49,7 +49,7 @@ async def get_history_by_purity(
     purity: str,
     days: int = Query(7, description="Number of days to look back"),
     db: Session = Depends(get_db)
-) -> List[Dict]:
+) -> List[Dict[str, Any]]:
     """Get gold rates history for a specific purity"""
     
     # Validate purity
@@ -80,7 +80,7 @@ async def get_history_by_purity(
     ]
 
 # Helper function for history queries
-async def get_history_by_days(db: Session, days: int) -> List[Dict]:
+async def get_history_by_days(db: Session, days: int) -> List[Dict[str, Any]]:
     """Get gold rates history for the specified number of days"""
     
     # Calculate date range

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Enquiries - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-envelope text-info me-2"></i>
+                        Contact Enquiries
+                    </h1>
+                    <p class="text-muted mb-0">Customer enquiries and appointment requests</p>
+                </div>
+                <div>
+                    <span class="badge bg-primary fs-6">
+                        {{ enquiries|length }} Total Enquiries
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enquiries Table -->
+    <div class="row">
+        <div class="col-12">
+            {% if enquiries %}
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Preferred Store</th>
+                                <th class="d-none d-lg-table-cell">Preferred Date/Time</th>
+                                <th class="d-none d-md-table-cell">Received</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enquiry in enquiries %}
+                            <tr>
+                                <td>{{ enquiry.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="feature-icon bg-info me-3" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ enquiry.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ enquiry.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <div class="mb-1">
+                                            <i class="bi bi-telephone text-success me-1"></i>
+                                            <small>{{ enquiry.phone_number }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-shop"></i>
+                                        {{ enquiry.preferred_store }}
+                                    </span>
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    <div class="preferred-time">
+                                        <i class="bi bi-calendar-event text-primary me-1"></i>
+                                        <small>{{ enquiry.preferred_date_time }}</small>
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <div class="update-time">
+                                        {{ enquiry.created_at.strftime('%b %d, %Y') }}
+                                        <small>{{ enquiry.created_at.strftime('%H:%M') }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/admin/contact-enquiries/view/{{ enquiry.id }}" class="btn btn-outline-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/admin/contact-enquiries/delete/{{ enquiry.id }}" 
+                                           class="btn btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to delete this enquiry?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-envelope"></i>
+                <h6>No Contact Enquiries</h6>
+                <p>No customer enquiries have been received yet.</p>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Enquiries will appear here when customers submit contact forms
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    {% if enquiries %}
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-info">
+                    <i class="bi bi-envelope"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ enquiries|length }}</h3>
+                    <p class="stats-label">Total Enquiries</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-success">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ enquiries|selectattr('created_at')|selectattr('created_at', 'ge', (now() - timedelta(days=7)))|list|length if now is defined else 'N/A' }}</h3>
+                    <p class="stats-label">This Week</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-warning">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ enquiries|map(attribute='preferred_store')|unique|list|length }}</h3>
+                    <p class="stats-label">Stores Requested</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-primary">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ enquiries[0].created_at.strftime('%b %d') if enquiries else 'N/A' }}</h3>
+                    <p class="stats-label">Latest Enquiry</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

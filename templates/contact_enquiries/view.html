@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}View Enquiry - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-eye text-info me-2"></i>
+                        Contact Enquiry #{{ enquiry.id }}
+                    </h1>
+                    <p class="text-muted mb-0">Customer enquiry details</p>
+                </div>
+                <div>
+                    <a href="/admin/contact-enquiries" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Enquiries
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enquiry Details -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="table-card">
+                <div class="p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-person me-2"></i>Customer Information
+                            </h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Full Name</label>
+                                <div class="p-2 bg-light rounded">{{ enquiry.name }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email Address</label>
+                                <div class="p-2 bg-light rounded">
+                                    <i class="bi bi-envelope me-2"></i>
+                                    <a href="mailto:{{ enquiry.email }}">{{ enquiry.email }}</a>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Phone Number</label>
+                                <div class="p-2 bg-light rounded">
+                                    <i class="bi bi-telephone me-2"></i>
+                                    <a href="tel:{{ enquiry.phone_number }}">{{ enquiry.phone_number }}</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-success mb-3">
+                                <i class="bi bi-calendar-event me-2"></i>Appointment Preferences
+                            </h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Preferred Store</label>
+                                <div class="p-2 bg-light rounded">
+                                    <span class="badge bg-warning text-dark me-2">
+                                        <i class="bi bi-shop"></i>
+                                    </span>
+                                    {{ enquiry.preferred_store }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Preferred Date & Time</label>
+                                <div class="p-2 bg-light rounded">
+                                    <i class="bi bi-clock me-2 text-primary"></i>
+                                    {{ enquiry.preferred_date_time }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-info mb-3">
+                                <i class="bi bi-info-circle me-2"></i>Enquiry Timeline
+                            </h6>
+                            
+                            <div class="timeline-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon bg-success me-3" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-envelope-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Enquiry Received</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ enquiry.created_at.strftime('%A, %B %d, %Y at %I:%M %p') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="mailto:{{ enquiry.email }}" class="btn btn-primary">
+                            <i class="bi bi-envelope"></i> Send Email
+                        </a>
+                        <a href="tel:{{ enquiry.phone_number }}" class="btn btn-success">
+                            <i class="bi bi-telephone"></i> Call Customer
+                        </a>
+                        <a href="/admin/contact-enquiries/delete/{{ enquiry.id }}" 
+                           class="btn btn-outline-danger"
+                           onclick="return confirm('Are you sure you want to delete this enquiry?')">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="features-card">
+                <h6 class="features-title">
+                    <i class="bi bi-graph-up me-2"></i>Quick Actions
+                </h6>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-primary">
+                        <i class="bi bi-envelope"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Email Response</strong>
+                        <small>Send appointment confirmation</small>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-success">
+                        <i class="bi bi-telephone"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Phone Call</strong>
+                        <small>Discuss requirements directly</small>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-warning">
+                        <i class="bi bi-calendar-plus"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Schedule Appointment</strong>
+                        <small>Book at preferred store</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Customer Details:</h6>
+                <ul class="small">
+                    <li><strong>ID:</strong> #{{ enquiry.id }}</li>
+                    <li><strong>Received:</strong> {{ enquiry.created_at.strftime('%d/%m/%Y') }}</li>
+                    <li><strong>Time:</strong> {{ enquiry.created_at.strftime('%I:%M %p') }}</li>
+                    <li><strong>Status:</strong> <span class="badge bg-info">New</span></li>
+                </ul>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Customer data is secure and confidential
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Guide Management - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-book text-success me-2"></i>
+                        Guide Management
+                    </h1>
+                    <p class="text-muted mb-0">Manage educational guides and content</p>
+                </div>
+                <div>
+                    <a href="/admin/guides/add" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Add New Guide
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guides Table -->
+    <div class="row">
+        <div class="col-12">
+            {% if guides %}
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Guide Title</th>
+                                <th class="d-none d-md-table-cell">Content Preview</th>
+                                <th class="d-none d-lg-table-cell">Image</th>
+                                <th class="d-none d-lg-table-cell">Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for guide in guides %}
+                            <tr>
+                                <td>{{ guide.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="feature-icon bg-success me-3" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-book"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ guide.title }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <small class="text-muted">
+                                        {{ guide.content[:100] }}{% if guide.content|length > 100 %}...{% endif %}
+                                    </small>
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    {% if guide.image %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-image"></i> Available
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-image"></i> No Image
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    <div class="update-time">
+                                        {{ guide.created_at.strftime('%b %d, %Y') }}
+                                        <small>{{ guide.created_at.strftime('%H:%M') }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/admin/guides/edit/{{ guide.id }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="/admin/guides/delete/{{ guide.id }}" 
+                                           class="btn btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to delete this guide?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-book"></i>
+                <h6>No Guides Found</h6>
+                <p>Start by adding your first educational guide.</p>
+                <a href="/admin/guides/add" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add First Guide
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

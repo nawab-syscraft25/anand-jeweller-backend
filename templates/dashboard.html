@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="welcome-title">Welcome to Anand Jewels</h1>
+                        <p class="welcome-subtitle">Gold Rate Management Dashboard</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="time-display">
+                            <i class="bi bi-clock"></i>
+                            <span id="current-time"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-primary">
+                    <i class="bi bi-database"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ total_rates|default(4) }}</h3>
+                    <p class="stats-label">Total Gold Rates</p>
+                    <span class="stats-badge success">Active</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-success">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ total_stores|default(3) }}</h3>
+                    <p class="stats-label">Store Locations</p>
+                    <span class="stats-badge success">Active</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-info">
+                    <i class="bi bi-envelope"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ total_enquiries|default(0) }}</h3>
+                    <p class="stats-label">Contact Enquiries</p>
+                    <span class="stats-badge warning">New</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-warning">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ total_guides|default(0) }}</h3>
+                    <p class="stats-label">Educational Guides</p>
+                    <span class="stats-badge success">Published</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="action-card">
+                <h5 class="action-title">Quick Actions</h5>
+                <div class="action-buttons">
+                    <a href="/admin/gold-rates/add" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i>
+                        Add New Rate
+                    </a>
+                    <a href="/admin/gold-rates" class="btn btn-outline-primary">
+                        <i class="bi bi-list"></i>
+                        View All Rates
+                    </a>
+                    <a href="/admin/stores" class="btn btn-outline-warning">
+                        <i class="bi bi-shop"></i>
+                        Manage Stores
+                    </a>
+                    <a href="/admin/contact-enquiries" class="btn btn-outline-info">
+                        <i class="bi bi-envelope"></i>
+                        View Enquiries
+                    </a>
+                    <a href="/admin/guides" class="btn btn-outline-success">
+                        <i class="bi bi-book"></i>
+                        Manage Guides
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Gold Rates Table -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="table-card">
+                <div class="table-header">
+                    <h5 class="table-title">Recent Gold Rates</h5>
+                    <small class="table-subtitle">Latest market updates</small>
+                </div>
+                
+                {% if latest_rates %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Purity</th>
+                                <th>Current Rate</th>
+                                <th class="d-none d-md-table-cell">Previous Rate</th>
+                                <th class="d-none d-lg-table-cell">Last Updated</th>
+                                <th>Change</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rate in latest_rates %}
+                            <tr>
+                                <td>
+                                    <div class="purity-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        {{ rate.purity }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong class="current-rate">₹{{ rate.new_rate_per_gram|round(2) }}</strong>
+                                    <small class="rate-unit">per gram</small>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="previous-rate">₹{{ rate.old_rate_per_gram|round(2) }}</span>
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    <div class="update-time">
+                                        {{ rate.release_datetime.strftime('%b %d, %Y') }}
+                                        <small>{{ rate.release_datetime.strftime('%H:%M') }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% set change = rate.new_rate_per_gram - rate.old_rate_per_gram %}
+                                    {% if change > 0 %}
+                                        <span class="change-badge positive">
+                                            <i class="bi bi-arrow-up"></i>
+                                            +₹{{ change|round(2) }}
+                                        </span>
+                                    {% elif change < 0 %}
+                                        <span class="change-badge negative">
+                                            <i class="bi bi-arrow-down"></i>
+                                            ₹{{ change|round(2) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="change-badge neutral">
+                                            <i class="bi bi-dash"></i>
+                                            No Change
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h6>No Gold Rates Available</h6>
+                    <p>Start by adding your first gold rate to track market changes.</p>
+                    <a href="/admin/gold-rates/add" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Your First Rate
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- API Information -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="api-card">
+                <div class="api-header">
+                    <h5 class="api-title">API Documentation</h5>
+                    <p class="api-subtitle">RESTful endpoints for developers</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="endpoint-group">
+                            <h6 class="endpoint-title">Latest Rates</h6>
+                            <div class="endpoint-item">
+                                <code>GET /api/gold-rates/latest</code>
+                                <button class="copy-btn" data-endpoint="/api/gold-rates/latest">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="endpoint-group">
+                            <h6 class="endpoint-title">Historical Data</h6>
+                            <div class="endpoint-item">
+                                <code>GET /api/gold-rates/history/7d</code>
+                                <button class="copy-btn" data-endpoint="/api/gold-rates/history/7d">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                            <div class="endpoint-item">
+                                <code>GET /api/gold-rates/history/30d</code>
+                                <button class="copy-btn" data-endpoint="/api/gold-rates/history/30d">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="endpoint-group">
+                            <h6 class="endpoint-title">Filtered Queries</h6>
+                            <div class="endpoint-item">
+                                <code>GET /api/gold-rates/history/24K?days=7</code>
+                                <button class="copy-btn" data-endpoint="/api/gold-rates/history/24K?days=7">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                            <div class="endpoint-item">
+                                <code>GET /api/gold-rates/history/22K?days=30</code>
+                                <button class="copy-btn" data-endpoint="/api/gold-rates/history/22K?days=30">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="features-card">
+                <h6 class="features-title">System Status</h6>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-success">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Database Online</strong>
+                        <small>All data synchronized</small>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-info">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Secure Access</strong>
+                        <small>Authentication active</small>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-warning">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Fast Response</strong>
+                        <small>Optimized performance</small>
+                    </div>
+                </div>
+                
+                <div class="api-status">
+                    <div class="status-indicator"></div>
+                    <strong>System Status: Online</strong>
+                    <small>All services operational</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/dashboard.js"></script>
+{% endblock %}

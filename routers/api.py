@@ -1,0 +1,248 @@
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import desc, and_
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+from pydantic import BaseModel, EmailStr, Field
+
+from database import get_db
+from models import GoldRate, Store, ContactEnquiry, Guide
+
+router = APIRouter()
+
+# Latest rates for all purities
+@router.get("/api/gold-rates/latest")
+async def get_latest_rates(db: Session = Depends(get_db)) -> Dict[str, Dict[str, str]]:
+    """Get the latest gold rates for all purities"""
+    
+    latest_rates = {}
+    purities = ["24K", "22K", "18K"]
+    
+    for purity in purities:
+        latest_rate = db.query(GoldRate).filter(
+            GoldRate.purity == purity
+        ).order_by(desc(GoldRate.release_datetime)).first()
+        
+        if latest_rate:
+            latest_rates[purity] = {
+                "new_rate": latest_rate.new_rate_per_gram,
+                "old_rate": latest_rate.old_rate_per_gram,
+                "release_datetime": latest_rate.release_datetime.strftime("%Y-%m-%d")
+            }
+    
+    return latest_rates
+
+# History for last N days
+@router.get("/api/gold-rates/history/7d")
+async def get_7_day_history(db: Session = Depends(get_db)) -> List[Dict]:
+    """Get gold rates history for the last 7 days"""
+    return await get_history_by_days(db, 7)
+
+@router.get("/api/gold-rates/history/30d")
+async def get_30_day_history(db: Session = Depends(get_db)) -> List[Dict]:
+    """Get gold rates history for the last 30 days"""
+    return await get_history_by_days(db, 30)
+
+# History filtered by purity
+@router.get("/api/gold-rates/history/{purity}")
+async def get_history_by_purity(
+    purity: str,
+    days: int = Query(7, description="Number of days to look back"),
+    db: Session = Depends(get_db)
+) -> List[Dict]:
+    """Get gold rates history for a specific purity"""
+    
+    # Validate purity
+    if purity not in ["24K", "22K", "18K"]:
+        raise HTTPException(status_code=400, detail="Invalid purity. Must be 24K, 22K, or 18K")
+    
+    # Calculate date range
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days)
+    
+    # Query rates for specific purity
+    rates = db.query(GoldRate).filter(
+        and_(
+            GoldRate.purity == purity,
+            GoldRate.release_datetime >= start_date,
+            GoldRate.release_datetime <= end_date
+        )
+    ).order_by(desc(GoldRate.release_datetime)).all()
+    
+    return [
+        {
+            "purity": rate.purity,
+            "new_rate": rate.new_rate_per_gram,
+            "old_rate": rate.old_rate_per_gram,
+            "release_datetime": rate.release_datetime.strftime("%Y-%m-%d")
+        }
+        for rate in rates
+    ]
+
+# Helper function for history queries
+async def get_history_by_days(db: Session, days: int) -> List[Dict]:
+    """Get gold rates history for the specified number of days"""
+    
+    # Calculate date range
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days)
+    
+    # Query all rates within date range
+    rates = db.query(GoldRate).filter(
+        and_(
+            GoldRate.release_datetime >= start_date,
+            GoldRate.release_datetime <= end_date
+        )
+    ).order_by(desc(GoldRate.release_datetime)).all()
+    
+    return [
+        {
+            "purity": rate.purity,
+            "new_rate": rate.new_rate_per_gram,
+            "old_rate": rate.old_rate_per_gram,
+            "release_datetime": rate.release_datetime.strftime("%Y-%m-%d")
+        }
+        for rate in rates
+    ]
+
+# Additional endpoint for getting all available purities
+@router.get("/api/gold-rates/purities")
+async def get_available_purities() -> List[str]:
+    """Get list of available gold purities"""
+    return ["24K", "22K", "18K"]
+
+# Pydantic models for request/response
+class ContactEnquiryCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="Customer's full name")
+    phone_number: str = Field(..., min_length=10, max_length=15, description="Phone number with country code")
+    email: EmailStr = Field(..., description="Valid email address")
+    preferred_store: str = Field(..., min_length=5, max_length=200, description="Name of preferred store")
+    preferred_date_time: str = Field(..., min_length=10, max_length=100, description="Preferred appointment date and time")
+
+class ContactEnquiryResponse(BaseModel):
+    id: int
+    name: str
+    phone_number: str
+    email: str
+    preferred_store: str
+    preferred_date_time: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class StoreResponse(BaseModel):
+    id: int
+    store_name: str
+    store_address: str
+    store_image: Optional[str]
+    timings: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class GuideResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    image: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+# Store Management APIs
+@router.get("/api/stores", response_model=List[StoreResponse])
+async def get_all_stores(db: Session = Depends(get_db)):
+    """Get all store locations"""
+    stores = db.query(Store).order_by(Store.created_at.desc()).all()
+    return stores
+
+@router.get("/api/stores/{store_id}", response_model=StoreResponse)
+async def get_store_by_id(store_id: int, db: Session = Depends(get_db)):
+    """Get a specific store by ID"""
+    store = db.query(Store).filter(Store.id == store_id).first()
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    return store
+
+# Contact Enquiry APIs
+@router.post("/api/contact-enquiries", response_model=ContactEnquiryResponse)
+async def create_contact_enquiry(
+    enquiry: ContactEnquiryCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a new contact enquiry"""
+    
+    # Validate that the preferred store exists
+    store_exists = db.query(Store).filter(Store.store_name == enquiry.preferred_store).first()
+    if not store_exists:
+        # Get all available stores for error message
+        available_stores = db.query(Store).all()
+        store_names = [store.store_name for store in available_stores]
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid store name. Available stores: {', '.join(store_names)}"
+        )
+    
+    # Create new contact enquiry
+    db_enquiry = ContactEnquiry(
+        name=enquiry.name,
+        phone_number=enquiry.phone_number,
+        email=enquiry.email,
+        preferred_store=enquiry.preferred_store,
+        preferred_date_time=enquiry.preferred_date_time
+    )
+    
+    db.add(db_enquiry)
+    db.commit()
+    db.refresh(db_enquiry)
+    
+    return db_enquiry
+
+@router.get("/api/contact-enquiries", response_model=List[ContactEnquiryResponse])
+async def get_all_contact_enquiries(
+    limit: int = Query(50, description="Maximum number of enquiries to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all contact enquiries (limited for performance)"""
+    enquiries = db.query(ContactEnquiry).order_by(
+        desc(ContactEnquiry.created_at)
+    ).limit(limit).all()
+    return enquiries
+
+@router.get("/api/contact-enquiries/{enquiry_id}", response_model=ContactEnquiryResponse)
+async def get_contact_enquiry_by_id(enquiry_id: int, db: Session = Depends(get_db)):
+    """Get a specific contact enquiry by ID"""
+    enquiry = db.query(ContactEnquiry).filter(ContactEnquiry.id == enquiry_id).first()
+    if not enquiry:
+        raise HTTPException(status_code=404, detail="Contact enquiry not found")
+    return enquiry
+
+# Guide APIs
+@router.get("/api/guides", response_model=List[GuideResponse])
+async def get_all_guides(
+    limit: int = Query(20, description="Maximum number of guides to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all guides"""
+    guides = db.query(Guide).order_by(desc(Guide.created_at)).limit(limit).all()
+    return guides
+
+@router.get("/api/guides/{guide_id}", response_model=GuideResponse)
+async def get_guide_by_id(guide_id: int, db: Session = Depends(get_db)):
+    """Get a specific guide by ID"""
+    guide = db.query(Guide).filter(Guide.id == guide_id).first()
+    if not guide:
+        raise HTTPException(status_code=404, detail="Guide not found")
+    return guide
+
+# Health check endpoint
+@router.get("/api/health")
+async def health_check():
+    """API health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}

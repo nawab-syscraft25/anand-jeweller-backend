@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Add Award - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-plus-circle text-success me-2"></i>
+                        Add New Award
+                    </h1>
+                    <p class="text-muted mb-0">Create a new award entry</p>
+                </div>
+                <div>
+                    <a href="/admin/awards" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Awards
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-trophy me-2"></i>
+                        Award Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="/admin/awards/add">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">
+                                        <i class="bi bi-card-heading me-1"></i>
+                                        Award Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="title" 
+                                           name="title" 
+                                           value="{{ title or '' }}"
+                                           required 
+                                           placeholder="Enter award title (e.g., Best Jeweler 2024)">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">
+                                        <i class="bi bi-file-text me-1"></i>
+                                        Award Description <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="content" 
+                                              name="content" 
+                                              rows="8" 
+                                              required 
+                                              placeholder="Describe the award, who granted it, when it was received, and its significance...">{{ content or '' }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Award Guidelines
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Use clear and descriptive titles</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Include the awarding organization</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Mention the date received</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Explain the award's significance</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Keep content professional and factual</small>
+                                            </li>
+                                        </ul>
+                                        
+                                        <hr>
+                                        
+                                        <h6 class="card-title">
+                                            <i class="bi bi-lightbulb me-1"></i>
+                                            Example Titles
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li><small class="text-muted">"Excellence in Jewelry Design 2024"</small></li>
+                                            <li><small class="text-muted">"Best Customer Service Award"</small></li>
+                                            <li><small class="text-muted">"Industry Innovation Recognition"</small></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Add Award
+                            </button>
+                            <a href="/admin/awards" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

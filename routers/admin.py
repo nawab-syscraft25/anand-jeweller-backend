@@ -10,7 +10,7 @@ import uuid
 from pathlib import Path
 
 from database import get_db
-from models import AdminUser, GoldRate, Store, ContactEnquiry, Guide, About, Team, Mission, Terms
+from models import AdminUser, GoldRate, Store, ContactEnquiry, Guide, About, Team, Mission, Terms, Vision, Award, Achievement, Notification
 from auth import authenticate_user, login_user, logout_user, get_current_user, is_authenticated
 from jwt_auth import require_admin_auth
 
@@ -95,6 +95,9 @@ async def admin_dashboard(
     total_team = db.query(Team).count()
     total_missions = db.query(Mission).count()
     total_terms = db.query(Terms).count()
+    total_awards = db.query(Award).count()
+    total_achievements = db.query(Achievement).count()
+    total_notifications = db.query(Notification).count()
     latest_rate = db.query(GoldRate).order_by(desc(GoldRate.release_datetime)).first()
     
     # Get JWT token from session for frontend use
@@ -113,6 +116,9 @@ async def admin_dashboard(
             "total_team": total_team,
             "total_missions": total_missions,
             "total_terms": total_terms,
+            "total_awards": total_awards,
+            "total_achievements": total_achievements,
+            "total_notifications": total_notifications,
             "latest_rate": latest_rate,
             "jwt_token": jwt_token
         }
@@ -995,3 +1001,660 @@ async def delete_terms(
     db.commit()
     
     return RedirectResponse(url="/admin/terms", status_code=302)
+
+# Vision Management Routes
+
+# List vision entries
+@router.get("/admin/visions", response_class=HTMLResponse)
+async def list_visions(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    jwt_token = request.session.get("jwt_token", "")
+    
+    vision_entries = db.query(Vision).order_by(desc(Vision.created_at)).all()
+    
+    return templates.TemplateResponse(
+        "visions/list.html",
+        {
+            "request": request,
+            "user": current_user,
+            "vision_entries": vision_entries,
+            "jwt_token": jwt_token
+        }
+    )
+
+# Add vision entry form
+@router.get("/admin/visions/add", response_class=HTMLResponse)
+async def add_vision_form(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse(
+        "visions/add.html",
+        {
+            "request": request,
+            "user": current_user,
+            "jwt_token": jwt_token
+        }
+    )
+
+# Add vision entry handler
+@router.post("/admin/visions/add")
+async def add_vision(
+    request: Request,
+    title: str = Form(...),
+    content: str = Form(...),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    try:
+        # Handle file upload
+        image_path = await save_uploaded_file(image, "visions")
+        
+        vision_entry = Vision(
+            title=title,
+            content=content,
+            image=image_path
+        )
+        
+        db.add(vision_entry)
+        db.commit()
+        
+        return RedirectResponse(url="/admin/visions", status_code=302)
+        
+    except Exception as e:
+        return templates.TemplateResponse(
+            "visions/add.html",
+            {
+                "request": request,
+                "user": current_user,
+                "error": f"Error adding vision entry: {str(e)}",
+                "jwt_token": request.session.get("jwt_token", "")
+            }
+        )
+
+# Edit vision entry form
+@router.get("/admin/visions/edit/{vision_id}", response_class=HTMLResponse)
+async def edit_vision_form(
+    request: Request,
+    vision_id: int,
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    vision_entry = db.query(Vision).filter(Vision.id == vision_id).first()
+    if not vision_entry:
+        raise HTTPException(status_code=404, detail="Vision entry not found")
+    
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse(
+        "visions/edit.html",
+        {
+            "request": request,
+            "user": current_user,
+            "vision_entry": vision_entry,
+            "jwt_token": jwt_token
+        }
+    )
+
+# Edit vision entry handler
+@router.post("/admin/visions/edit/{vision_id}")
+async def edit_vision(
+    request: Request,
+    vision_id: int,
+    title: str = Form(...),
+    content: str = Form(...),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    try:
+        vision_entry = db.query(Vision).filter(Vision.id == vision_id).first()
+        if not vision_entry:
+            raise HTTPException(status_code=404, detail="Vision entry not found")
+        
+        # Handle file upload - only update image if new file is uploaded
+        image_path = await save_uploaded_file(image, "visions")
+        
+        vision_entry.title = title
+        vision_entry.content = content
+        if image_path:  # Only update image if new file was uploaded
+            vision_entry.image = image_path
+        
+        db.commit()
+        
+        return RedirectResponse(url="/admin/visions", status_code=302)
+        
+    except Exception as e:
+        vision_entry = db.query(Vision).filter(Vision.id == vision_id).first()
+        return templates.TemplateResponse(
+            "visions/edit.html",
+            {
+                "request": request,
+                "user": current_user,
+                "vision_entry": vision_entry,
+                "error": f"Error updating vision entry: {str(e)}",
+                "jwt_token": request.session.get("jwt_token", "")
+            }
+        )
+
+# Delete vision entry
+@router.get("/admin/visions/delete/{vision_id}")
+async def delete_vision(
+    request: Request,
+    vision_id: int,
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    vision_entry = db.query(Vision).filter(Vision.id == vision_id).first()
+    if not vision_entry:
+        raise HTTPException(status_code=404, detail="Vision entry not found")
+    
+    db.delete(vision_entry)
+    db.commit()
+    
+    return RedirectResponse(url="/admin/visions", status_code=302)
+
+# ======================
+# Award Management
+# ======================
+
+@router.get("/admin/awards", response_class=HTMLResponse)
+async def list_awards(
+    request: Request, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """List all awards"""
+    awards = db.query(Award).order_by(desc(Award.created_at)).all()
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("awards/list.html", {
+        "request": request,
+        "user": current_user,
+        "awards": awards,
+        "page_title": "Awards Management",
+        "jwt_token": jwt_token
+    })
+
+@router.get("/admin/awards/add", response_class=HTMLResponse)
+async def add_award_form(
+    request: Request,
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Show add award form"""
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("awards/add.html", {
+        "request": request,
+        "user": current_user,
+        "page_title": "Add New Award",
+        "jwt_token": jwt_token
+    })
+
+@router.post("/admin/awards/add")
+async def add_award(
+    request: Request,
+    title: str = Form(...),
+    content: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Add new award"""
+    
+    try:
+        new_award = Award(
+            title=title,
+            content=content
+        )
+        
+        db.add(new_award)
+        db.commit()
+        
+        return RedirectResponse(url="/admin/awards", status_code=302)
+        
+    except Exception as e:
+        jwt_token = request.session.get("jwt_token", "")
+        return templates.TemplateResponse("awards/add.html", {
+            "request": request,
+            "user": current_user,
+            "error": f"Failed to add award: {str(e)}",
+            "title": title,
+            "content": content,
+            "page_title": "Add New Award",
+            "jwt_token": jwt_token
+        })
+
+@router.get("/admin/awards/edit/{award_id}", response_class=HTMLResponse)
+async def edit_award_form(
+    request: Request, 
+    award_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Show edit award form"""
+    award = db.query(Award).filter(Award.id == award_id).first()
+    
+    if not award:
+        raise HTTPException(status_code=404, detail="Award not found")
+    
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("awards/edit.html", {
+        "request": request,
+        "user": current_user,
+        "award": award,
+        "page_title": f"Edit Award - {award.title}",
+        "jwt_token": jwt_token
+    })
+
+@router.post("/admin/awards/edit/{award_id}")
+async def edit_award(
+    request: Request,
+    award_id: int,
+    title: str = Form(...),
+    content: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Update award"""
+    award = db.query(Award).filter(Award.id == award_id).first()
+    
+    if not award:
+        raise HTTPException(status_code=404, detail="Award not found")
+    
+    try:
+        award.title = title
+        award.content = content
+        
+        db.commit()
+        
+        return RedirectResponse(url="/admin/awards", status_code=302)
+        
+    except Exception as e:
+        jwt_token = request.session.get("jwt_token", "")
+        return templates.TemplateResponse("awards/edit.html", {
+            "request": request,
+            "user": current_user,
+            "award": award,
+            "error": f"Failed to update award: {str(e)}",
+            "page_title": f"Edit Award - {award.title}",
+            "jwt_token": jwt_token
+        })
+
+@router.post("/admin/awards/delete/{award_id}")
+async def delete_award(
+    request: Request, 
+    award_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Delete award"""
+    award = db.query(Award).filter(Award.id == award_id).first()
+    
+    if not award:
+        raise HTTPException(status_code=404, detail="Award not found")
+    
+    db.delete(award)
+    db.commit()
+    
+    return RedirectResponse(url="/admin/awards", status_code=302)
+
+# ======================
+# Achievement Management
+# ======================
+
+@router.get("/admin/achievements", response_class=HTMLResponse)
+async def list_achievements(
+    request: Request, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """List all achievements"""
+    achievements = db.query(Achievement).order_by(desc(Achievement.date)).all()
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("achievements/list.html", {
+        "request": request,
+        "user": current_user,
+        "achievements": achievements,
+        "page_title": "Achievements Management",
+        "jwt_token": jwt_token
+    })
+
+@router.get("/admin/achievements/add", response_class=HTMLResponse)
+async def add_achievement_form(
+    request: Request,
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Show add achievement form"""
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("achievements/add.html", {
+        "request": request,
+        "user": current_user,
+        "page_title": "Add New Achievement",
+        "jwt_token": jwt_token
+    })
+
+@router.post("/admin/achievements/add")
+async def add_achievement(
+    request: Request,
+    title: str = Form(...),
+    date: str = Form(...),
+    content: str = Form(...),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Add new achievement"""
+    
+    image_path = None
+    
+    try:
+        # Handle image upload
+        if image and image.filename:
+            # Create unique filename
+            file_extension = Path(image.filename).suffix
+            unique_filename = f"{uuid.uuid4()}{file_extension}"
+            
+            # Save file
+            upload_dir = Path("static/uploads/achievements")
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            file_path = upload_dir / unique_filename
+            
+            with open(file_path, "wb") as buffer:
+                content_bytes = await image.read()
+                buffer.write(content_bytes)
+            
+            image_path = f"/static/uploads/achievements/{unique_filename}"
+        
+        # Parse date
+        achievement_date = datetime.strptime(date, "%Y-%m-%d")
+        
+        new_achievement = Achievement(
+            title=title,
+            date=achievement_date,
+            content=content,
+            image=image_path
+        )
+        
+        db.add(new_achievement)
+        db.commit()
+        
+        return RedirectResponse(url="/admin/achievements", status_code=302)
+        
+    except Exception as e:
+        jwt_token = request.session.get("jwt_token", "")
+        return templates.TemplateResponse("achievements/add.html", {
+            "request": request,
+            "user": current_user,
+            "error": f"Failed to add achievement: {str(e)}",
+            "title": title,
+            "date": date,
+            "content": content,
+            "page_title": "Add New Achievement",
+            "jwt_token": jwt_token
+        })
+
+@router.get("/admin/achievements/edit/{achievement_id}", response_class=HTMLResponse)
+async def edit_achievement_form(
+    request: Request, 
+    achievement_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Show edit achievement form"""
+    achievement = db.query(Achievement).filter(Achievement.id == achievement_id).first()
+    
+    if not achievement:
+        raise HTTPException(status_code=404, detail="Achievement not found")
+    
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("achievements/edit.html", {
+        "request": request,
+        "user": current_user,
+        "achievement": achievement,
+        "page_title": f"Edit Achievement - {achievement.title}",
+        "jwt_token": jwt_token
+    })
+
+@router.post("/admin/achievements/edit/{achievement_id}")
+async def edit_achievement(
+    request: Request,
+    achievement_id: int,
+    title: str = Form(...),
+    date: str = Form(...),
+    content: str = Form(...),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Update achievement"""
+    
+    achievement = db.query(Achievement).filter(Achievement.id == achievement_id).first()
+    
+    if not achievement:
+        raise HTTPException(status_code=404, detail="Achievement not found")
+    
+    try:
+        # Handle image upload
+        if image and image.filename:
+            # Create unique filename
+            file_extension = Path(image.filename).suffix
+            unique_filename = f"{uuid.uuid4()}{file_extension}"
+            
+            # Save file
+            upload_dir = Path("static/uploads/achievements")
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            file_path = upload_dir / unique_filename
+            
+            with open(file_path, "wb") as buffer:
+                content_bytes = await image.read()
+                buffer.write(content_bytes)
+            
+            achievement.image = f"/static/uploads/achievements/{unique_filename}"
+        
+        # Parse date
+        achievement_date = datetime.strptime(date, "%Y-%m-%d")
+        
+        achievement.title = title
+        achievement.date = achievement_date
+        achievement.content = content
+        
+        db.commit()
+        
+        return RedirectResponse(url="/admin/achievements", status_code=302)
+        
+    except Exception as e:
+        jwt_token = request.session.get("jwt_token", "")
+        return templates.TemplateResponse("achievements/edit.html", {
+            "request": request,
+            "user": current_user,
+            "achievement": achievement,
+            "error": f"Failed to update achievement: {str(e)}",
+            "page_title": f"Edit Achievement - {achievement.title}",
+            "jwt_token": jwt_token
+        })
+
+@router.post("/admin/achievements/delete/{achievement_id}")
+async def delete_achievement(
+    request: Request, 
+    achievement_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Delete achievement"""
+    achievement = db.query(Achievement).filter(Achievement.id == achievement_id).first()
+    
+    if not achievement:
+        raise HTTPException(status_code=404, detail="Achievement not found")
+    
+    db.delete(achievement)
+    db.commit()
+    
+    return RedirectResponse(url="/admin/achievements", status_code=302)
+
+# ======================
+# Notification Management
+# ======================
+
+@router.get("/admin/notifications", response_class=HTMLResponse)
+async def list_notifications(
+    request: Request, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """List all notifications"""
+    notifications = db.query(Notification).order_by(desc(Notification.datetime)).all()
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("notifications/list.html", {
+        "request": request,
+        "user": current_user,
+        "notifications": notifications,
+        "page_title": "Notifications Management",
+        "jwt_token": jwt_token
+    })
+
+@router.get("/admin/notifications/add", response_class=HTMLResponse)
+async def add_notification_form(
+    request: Request,
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Show add notification form"""
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("notifications/add.html", {
+        "request": request,
+        "user": current_user,
+        "page_title": "Add New Notification",
+        "jwt_token": jwt_token
+    })
+
+@router.post("/admin/notifications/add")
+async def add_notification(
+    request: Request,
+    title: str = Form(...),
+    description: str = Form(...),
+    datetime_str: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Add new notification"""
+    
+    try:
+        # Parse datetime
+        notification_datetime = datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M")
+        
+        new_notification = Notification(
+            title=title,
+            description=description,
+            datetime=notification_datetime
+        )
+        
+        db.add(new_notification)
+        db.commit()
+        
+        return RedirectResponse(url="/admin/notifications", status_code=302)
+        
+    except Exception as e:
+        jwt_token = request.session.get("jwt_token", "")
+        return templates.TemplateResponse("notifications/add.html", {
+            "request": request,
+            "user": current_user,
+            "error": f"Failed to add notification: {str(e)}",
+            "title": title,
+            "description": description,
+            "datetime_str": datetime_str,
+            "page_title": "Add New Notification",
+            "jwt_token": jwt_token
+        })
+
+@router.get("/admin/notifications/edit/{notification_id}", response_class=HTMLResponse)
+async def edit_notification_form(
+    request: Request, 
+    notification_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Show edit notification form"""
+    notification = db.query(Notification).filter(Notification.id == notification_id).first()
+    
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("notifications/edit.html", {
+        "request": request,
+        "user": current_user,
+        "notification": notification,
+        "page_title": f"Edit Notification - {notification.title}",
+        "jwt_token": jwt_token
+    })
+
+@router.post("/admin/notifications/edit/{notification_id}")
+async def edit_notification(
+    request: Request,
+    notification_id: int,
+    title: str = Form(...),
+    description: str = Form(...),
+    datetime_str: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Update notification"""
+    
+    notification = db.query(Notification).filter(Notification.id == notification_id).first()
+    
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    try:
+        # Parse datetime
+        notification_datetime = datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M")
+        
+        notification.title = title
+        notification.description = description
+        notification.datetime = notification_datetime
+        
+        db.commit()
+        
+        return RedirectResponse(url="/admin/notifications", status_code=302)
+        
+    except Exception as e:
+        jwt_token = request.session.get("jwt_token", "")
+        return templates.TemplateResponse("notifications/edit.html", {
+            "request": request,
+            "user": current_user,
+            "notification": notification,
+            "error": f"Failed to update notification: {str(e)}",
+            "page_title": f"Edit Notification - {notification.title}",
+            "jwt_token": jwt_token
+        })
+
+@router.post("/admin/notifications/delete/{notification_id}")
+async def delete_notification(
+    request: Request, 
+    notification_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Delete notification"""
+    notification = db.query(Notification).filter(Notification.id == notification_id).first()
+    
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    db.delete(notification)
+    db.commit()
+    
+    return RedirectResponse(url="/admin/notifications", status_code=302)

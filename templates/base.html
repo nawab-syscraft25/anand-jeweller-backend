@@ -102,6 +102,26 @@
                         <i class="bi bi-file-text"></i> Terms Management
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'visions' in request.url.path %}active{% endif %}" href="/admin/visions">
+                        <i class="bi bi-eye"></i> Vision Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'awards' in request.url.path %}active{% endif %}" href="/admin/awards">
+                        <i class="bi bi-trophy"></i> Award Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'achievements' in request.url.path %}active{% endif %}" href="/admin/achievements">
+                        <i class="bi bi-award"></i> Achievement Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'notifications' in request.url.path %}active{% endif %}" href="/admin/notifications">
+                        <i class="bi bi-bell"></i> Notification Management
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
@@ -156,6 +176,26 @@
                     <li class="nav-item">
                         <a class="nav-link {% if 'terms' in request.url.path %}active{% endif %}" href="/admin/terms">
                             <i class="bi bi-file-text"></i> Terms Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'visions' in request.url.path %}active{% endif %}" href="/admin/visions">
+                            <i class="bi bi-eye"></i> Vision Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'awards' in request.url.path %}active{% endif %}" href="/admin/awards">
+                            <i class="bi bi-trophy"></i> Award Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'achievements' in request.url.path %}active{% endif %}" href="/admin/achievements">
+                            <i class="bi bi-award"></i> Achievement Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'notifications' in request.url.path %}active{% endif %}" href="/admin/notifications">
+                            <i class="bi bi-bell"></i> Notification Management
                         </a>
                     </li>
                 </ul>

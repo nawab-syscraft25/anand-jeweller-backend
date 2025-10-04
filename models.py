@@ -143,4 +143,42 @@ class Vision(Base):
     created_at = Column(DateTime, default=func.now(), nullable=False)
     
     def __repr__(self):
-        return f"<Mission(title='{self.title}', image='{self.image}')>"
+        return f"<Vision(title='{self.title}', image='{self.image}')>"
+
+class Award(Base):
+    __tablename__ = "awards"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<Award(title='{self.title}')>"
+
+class Achievement(Base):
+    __tablename__ = "achievements"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    date = Column(DateTime, nullable=False)  # Achievement date
+    content = Column(Text, nullable=False)
+    image = Column(String, nullable=True)  # Path to uploaded image
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<Achievement(title='{self.title}', date='{self.date}')>"
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    datetime = Column(DateTime, nullable=False)  # Notification date and time
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<Notification(title='{self.title}', datetime='{self.datetime}')>"
+    
+

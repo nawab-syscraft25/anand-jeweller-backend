@@ -302,3 +302,4 @@ pids
 .yarn/install-state.gz
 .pnp.*
 *.history
+gold_rates.db

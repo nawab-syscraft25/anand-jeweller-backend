@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Add Notification - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-plus-circle text-success me-2"></i>
+                        Add New Notification
+                    </h1>
+                    <p class="text-muted mb-0">Create a new notification or announcement</p>
+                </div>
+                <div>
+                    <a href="/admin/notifications" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Notifications
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bell me-2"></i>
+                        Notification Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="/admin/notifications/add">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">
+                                        <i class="bi bi-card-heading me-1"></i>
+                                        Notification Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="title" 
+                                           name="title" 
+                                           value="{{ title or '' }}"
+                                           required 
+                                           placeholder="Enter notification title (e.g., New Store Opening)">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="datetime_str" class="form-label">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        Notification Date & Time <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local" 
+                                           class="form-control" 
+                                           id="datetime_str" 
+                                           name="datetime_str" 
+                                           value="{{ datetime_str or '' }}"
+                                           required>
+                                    <div class="form-text">
+                                        Set when this notification should be displayed or when the event occurs.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="bi bi-file-text me-1"></i>
+                                        Notification Description <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="description" 
+                                              name="description" 
+                                              rows="6" 
+                                              required 
+                                              placeholder="Provide detailed description of the notification or announcement...">{{ description or '' }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Notification Guidelines
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Use clear and concise titles</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Set appropriate date and time</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Include relevant details in description</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Keep tone professional and informative</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Include contact info if needed</small>
+                                            </li>
+                                        </ul>
+                                        
+                                        <hr>
+                                        
+                                        <h6 class="card-title">
+                                            <i class="bi bi-lightbulb me-1"></i>
+                                            Example Notifications
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li><small class="text-muted">"Holiday Store Hours"</small></li>
+                                            <li><small class="text-muted">"Special Discount Event"</small></li>
+                                            <li><small class="text-muted">"New Collection Launch"</small></li>
+                                            <li><small class="text-muted">"Maintenance Schedule"</small></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Add Notification
+                            </button>
+                            <a href="/admin/notifications" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

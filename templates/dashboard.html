@@ -144,7 +144,7 @@
 </div>
 
 <!-- Content Management Overview -->
-<div class="table-card mb-5">
+<div class="table-card mb-5 my-4">
     <div class="table-header">
         <div class="row align-items-center">
             <div class="col-md-8 mb-2 mb-md-0">
@@ -154,7 +154,7 @@
                 <small class="table-subtitle">Manage website content, team information, and company details</small>
             </div>
             <div class="col-md-4 text-md-end">
-                <div class="btn-group">
+                <div class="btn-group flex-wrap">
                     <a href="/admin/about" class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-info-circle me-1"></i>About
                     </a>
@@ -167,6 +167,15 @@
                     <a href="/admin/terms" class="btn btn-outline-info btn-sm">
                         <i class="bi bi-file-text me-1"></i>Terms
                     </a>
+                    <a href="/admin/awards" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-trophy me-1"></i>Awards
+                    </a>
+                    <a href="/admin/achievements" class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-award me-1"></i>Achievements
+                    </a>
+                    <a href="/admin/notifications" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-bell me-1"></i>Notifications
+                    </a>
                 </div>
             </div>
         </div>
@@ -174,8 +183,9 @@
     
     <div class="p-0">
         <div class="row g-0">
+            <!-- First Row -->
             <div class="col-lg-3 col-md-6">
-                <div class="border-end p-4 text-center">
+                <div class="border-end border-bottom p-4 text-center">
                     <div class="mb-3">
                         <i class="bi bi-info-circle" style="font-size: 2rem; color: var(--primary);"></i>
                     </div>
@@ -188,7 +198,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="border-end p-4 text-center">
+                <div class="border-end border-bottom p-4 text-center">
                     <div class="mb-3">
                         <i class="bi bi-people" style="font-size: 2rem; color: var(--success);"></i>
                     </div>
@@ -201,7 +211,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="border-end p-4 text-center">
+                <div class="border-end border-bottom p-4 text-center">
                     <div class="mb-3">
                         <i class="bi bi-bullseye" style="font-size: 2rem; color: var(--warning);"></i>
                     </div>
@@ -214,7 +224,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="p-4 text-center">
+                <div class="border-bottom p-4 text-center">
                     <div class="mb-3">
                         <i class="bi bi-file-text" style="font-size: 2rem; color: var(--info);"></i>
                     </div>
@@ -223,6 +233,47 @@
                     <div class="d-grid gap-2">
                         <a href="/admin/terms" class="btn btn-sm btn-outline-info">Manage</a>
                         <a href="/admin/terms/add" class="btn btn-sm btn-info">Add New</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Second Row -->
+            <div class="col-lg-4 col-md-6">
+                <div class="border-end p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-trophy" style="font-size: 2rem; color: var(--secondary);"></i>
+                    </div>
+                    <h6 class="fw-bold">Awards</h6>
+                    <div class="h4 mb-2">{{ total_awards|default(0) }}</div>
+                    <div class="d-grid gap-2">
+                        <a href="/admin/awards" class="btn btn-sm btn-outline-secondary">Manage</a>
+                        <a href="/admin/awards/add" class="btn btn-sm btn-secondary">Add New</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="border-end p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-award" style="font-size: 2rem; color: var(--dark);"></i>
+                    </div>
+                    <h6 class="fw-bold">Achievements</h6>
+                    <div class="h4 mb-2">{{ total_achievements|default(0) }}</div>
+                    <div class="d-grid gap-2">
+                        <a href="/admin/achievements" class="btn btn-sm btn-outline-dark">Manage</a>
+                        <a href="/admin/achievements/add" class="btn btn-sm btn-dark">Add New</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div class="p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-bell" style="font-size: 2rem; color: var(--danger);"></i>
+                    </div>
+                    <h6 class="fw-bold">Notifications</h6>
+                    <div class="h4 mb-2">{{ total_notifications|default(0) }}</div>
+                    <div class="d-grid gap-2">
+                        <a href="/admin/notifications" class="btn btn-sm btn-outline-danger">Manage</a>
+                        <a href="/admin/notifications/add" class="btn btn-sm btn-danger">Add New</a>
                     </div>
                 </div>
             </div>

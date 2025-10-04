@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Achievement - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-pencil text-info me-2"></i>
+                        Edit Achievement #{{ achievement.id }}
+                    </h1>
+                    <p class="text-muted mb-0">Update achievement information</p>
+                </div>
+                <div>
+                    <a href="/admin/achievements" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Achievements
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-award me-2"></i>
+                        Achievement Details - {{ achievement.title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="/admin/achievements/edit/{{ achievement.id }}" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">
+                                        <i class="bi bi-card-heading me-1"></i>
+                                        Achievement Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="title" 
+                                           name="title" 
+                                           value="{{ achievement.title }}"
+                                           required 
+                                           placeholder="Enter achievement title">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        Achievement Date <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="date" 
+                                           name="date" 
+                                           value="{{ achievement.date.strftime('%Y-%m-%d') }}"
+                                           required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">
+                                        <i class="bi bi-file-text me-1"></i>
+                                        Achievement Description <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="content" 
+                                              name="content" 
+                                              rows="6" 
+                                              required 
+                                              placeholder="Describe the achievement details...">{{ achievement.content }}</textarea>
+                                </div>
+
+                                {% if achievement.image %}
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-image me-1"></i>
+                                        Current Achievement Image
+                                    </label>
+                                    <div class="border rounded p-2">
+                                        <img src="{{ achievement.image }}" alt="{{ achievement.title }}" class="img-thumbnail" style="max-height: 150px;">
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">
+                                        <i class="bi bi-image me-1"></i>
+                                        {% if achievement.image %}Replace Achievement Image (Optional){% else %}Upload Achievement Image (Optional){% endif %}
+                                    </label>
+                                    <input type="file" 
+                                           class="form-control" 
+                                           id="image" 
+                                           name="image" 
+                                           accept="image/*">
+                                    <div class="form-text">
+                                        {% if achievement.image %}Upload a new image to replace the current achievement image.{% else %}Upload an image that represents this achievement.{% endif %} Maximum file size: 5MB.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Achievement Information
+                                        </h6>
+                                        <p class="mb-2">
+                                            <strong>Created:</strong><br>
+                                            <small class="text-muted">{{ achievement.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                                        </p>
+                                        <p class="mb-2">
+                                            <strong>Achievement ID:</strong> {{ achievement.id }}
+                                        </p>
+                                        <p class="mb-2">
+                                            <strong>Achievement Date:</strong><br>
+                                            <span class="badge bg-info">{{ achievement.date.strftime('%Y-%m-%d') }}</span>
+                                        </p>
+                                        {% if achievement.image %}
+                                        <p class="mb-2">
+                                            <strong>Current Image:</strong><br>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-image"></i> Image uploaded
+                                            </span>
+                                        </p>
+                                        {% endif %}
+                                        
+                                        <hr>
+                                        
+                                        <h6 class="card-title">
+                                            <i class="bi bi-lightbulb me-1"></i>
+                                            Editing Tips
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Verify achievement date accuracy</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Update impact details if needed</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Ensure description is current</small>
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                <small>Replace image if outdated</small>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Update Achievement
+                            </button>
+                            <a href="/admin/achievements" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

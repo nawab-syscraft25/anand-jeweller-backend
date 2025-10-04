@@ -9,7 +9,7 @@ from datetime import datetime
 from pydantic import BaseModel, validator
 
 from database import get_db
-from models import GoldRate, AdminUser, About, Team, Mission, Terms, Store, Guide, ContactEnquiry
+from models import GoldRate, AdminUser, About, Team, Mission, Terms, Store, Guide, ContactEnquiry, Vision
 from jwt_auth import get_current_admin_user, JWTAuth
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -224,6 +224,27 @@ class ContactEnquiryResponse(BaseModel):
     email: str
     preferred_store: str
     preferred_date_time: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+# Vision section models
+class VisionCreate(BaseModel):
+    title: str
+    content: str
+    image: str = None
+
+class VisionUpdate(BaseModel):
+    title: str
+    content: str
+    image: str = None
+
+class VisionResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    image: str = None
     created_at: datetime
     
     class Config:
@@ -1050,3 +1071,123 @@ async def delete_contact_enquiry(
     db.commit()
     
     return {"message": "Contact enquiry deleted successfully"}
+
+# ======================
+# Vision CRUD Operations
+# ======================
+
+@router.get("/visions", response_model=List[VisionResponse])
+async def get_all_visions(
+    current_user: AdminUser = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Get all visions (Admin only)"""
+    visions = db.query(Vision).order_by(Vision.created_at.desc()).all()
+    return visions
+
+@router.post("/visions", response_model=VisionResponse)
+async def create_vision(
+    vision_data: VisionCreate,
+    current_user: AdminUser = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new vision (Admin only)"""
+    try:
+        new_vision = Vision(
+            title=vision_data.title,
+            content=vision_data.content,
+            image=vision_data.image
+        )
+        
+        db.add(new_vision)
+        db.commit()
+        db.refresh(new_vision)
+        
+        return new_vision
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create vision: {str(e)}"
+        )
+
+@router.get("/visions/{vision_id}", response_model=VisionResponse)
+async def get_vision(
+    vision_id: int,
+    current_user: AdminUser = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific vision by ID (Admin only)"""
+    vision = db.query(Vision).filter(Vision.id == vision_id).first()
+    
+    if not vision:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Vision not found"
+        )
+    
+    return vision
+
+@router.put("/visions/{vision_id}", response_model=VisionResponse)
+async def update_vision(
+    vision_id: int,
+    vision_data: VisionUpdate,
+    current_user: AdminUser = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Update a vision (Admin only)"""
+    vision = db.query(Vision).filter(Vision.id == vision_id).first()
+    
+    if not vision:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Vision not found"
+        )
+    
+    try:
+        # Update vision fields
+        vision.title = vision_data.title
+        vision.content = vision_data.content
+        if vision_data.image is not None:
+            vision.image = vision_data.image
+        
+        db.commit()
+        db.refresh(vision)
+        
+        return vision
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update vision: {str(e)}"
+        )
+
+@router.delete("/visions/{vision_id}")
+async def delete_vision(
+    vision_id: int,
+    current_user: AdminUser = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a vision (Admin only)"""
+    vision = db.query(Vision).filter(Vision.id == vision_id).first()
+    
+    if not vision:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Vision not found"
+        )
+    
+    try:
+        db.delete(vision)
+        db.commit()
+        
+        return {"message": "Vision deleted successfully"}
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete vision: {str(e)}"
+        )

@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, EmailStr, Field
 
 from database import get_db
-from models import GoldRate, Store, ContactEnquiry, Guide, About, Team, Mission, Terms
+from models import GoldRate, Store, ContactEnquiry, Guide, About, Team, Mission, Terms, Vision, Award, Achievement, Notification
 
 router = APIRouter()
 
@@ -342,6 +342,50 @@ class TermsResponse(BaseModel):
         from_attributes = True
         arbitrary_types_allowed = True
 
+class VisionResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    image: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class AwardResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class AchievementResponse(BaseModel):
+    id: int
+    title: str
+    date: datetime
+    content: str
+    image: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class NotificationResponse(BaseModel):
+    id: int
+    title: str
+    description: str
+    datetime: datetime
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
 # Store Management APIs
 @router.get("/api/stores", response_model=List[StoreResponse])
 async def get_all_stores(db: Session = Depends(get_db)):
@@ -500,6 +544,78 @@ async def get_terms_by_id_public(terms_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Terms entry not found")
     return terms
 
+# Vision Management APIs
+@router.get("/api/visions", response_model=List[VisionResponse])
+async def get_all_visions_public(
+    limit: int = Query(20, description="Maximum number of vision entries to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all vision entries (public access)"""
+    vision_entries = db.query(Vision).order_by(desc(Vision.created_at)).limit(limit).all()
+    return vision_entries
+
+@router.get("/api/visions/{vision_id}", response_model=VisionResponse)
+async def get_vision_by_id_public(vision_id: int, db: Session = Depends(get_db)):
+    """Get a specific vision entry by ID (public access)"""
+    vision = db.query(Vision).filter(Vision.id == vision_id).first()
+    if not vision:
+        raise HTTPException(status_code=404, detail="Vision entry not found")
+    return vision
+
+# Awards API endpoints
+@router.get("/api/awards", response_model=List[AwardResponse])
+async def get_all_awards_public(
+    limit: int = Query(20, description="Maximum number of awards to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all awards (public access)"""
+    awards = db.query(Award).order_by(desc(Award.id)).limit(limit).all()
+    return awards
+
+@router.get("/api/awards/{award_id}", response_model=AwardResponse)
+async def get_award_by_id_public(award_id: int, db: Session = Depends(get_db)):
+    """Get a specific award by ID (public access)"""
+    award = db.query(Award).filter(Award.id == award_id).first()
+    if not award:
+        raise HTTPException(status_code=404, detail="Award not found")
+    return award
+
+# Achievements API endpoints
+@router.get("/api/achievements", response_model=List[AchievementResponse])
+async def get_all_achievements_public(
+    limit: int = Query(20, description="Maximum number of achievements to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all achievements (public access)"""
+    achievements = db.query(Achievement).order_by(desc(Achievement.date)).limit(limit).all()
+    return achievements
+
+@router.get("/api/achievements/{achievement_id}", response_model=AchievementResponse)
+async def get_achievement_by_id_public(achievement_id: int, db: Session = Depends(get_db)):
+    """Get a specific achievement by ID (public access)"""
+    achievement = db.query(Achievement).filter(Achievement.id == achievement_id).first()
+    if not achievement:
+        raise HTTPException(status_code=404, detail="Achievement not found")
+    return achievement
+
+# Notifications API endpoints
+@router.get("/api/notifications", response_model=List[NotificationResponse])
+async def get_all_notifications_public(
+    limit: int = Query(20, description="Maximum number of notifications to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all notifications (public access)"""
+    notifications = db.query(Notification).order_by(desc(Notification.datetime)).limit(limit).all()
+    return notifications
+
+@router.get("/api/notifications/{notification_id}", response_model=NotificationResponse)
+async def get_notification_by_id_public(notification_id: int, db: Session = Depends(get_db)):
+    """Get a specific notification by ID (public access)"""
+    notification = db.query(Notification).filter(Notification.id == notification_id).first()
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return notification
+
 # API Documentation endpoint
 @router.get("/api")
 async def api_documentation():
@@ -652,6 +768,50 @@ async def api_documentation():
                         "method": "GET",
                         "path": "/api/guides/{guide_id}",
                         "description": "Get specific guide by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/visions",
+                        "description": "Get all vision entries",
+                        "response_fields": ["id", "title", "content", "image", "created_at"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/visions/{vision_id}",
+                        "description": "Get specific vision entry by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/awards",
+                        "description": "Get all award entries",
+                        "response_fields": ["id", "title", "content"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/awards/{award_id}",
+                        "description": "Get specific award by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/achievements",
+                        "description": "Get all achievement entries",
+                        "response_fields": ["id", "title", "date", "content", "image"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/achievements/{achievement_id}",
+                        "description": "Get specific achievement by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/notifications",
+                        "description": "Get all notification entries",
+                        "response_fields": ["id", "title", "description", "datetime"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/notifications/{notification_id}",
+                        "description": "Get specific notification by ID"
                     }
                 ]
             },

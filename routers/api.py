@@ -275,8 +275,10 @@ class ContactEnquiryResponse(BaseModel):
 class StoreResponse(BaseModel):
     id: int
     store_name: str
+    phone_number: Optional[str]
     store_address: str
     store_image: Optional[str]
+    youtube_link: Optional[str]
     timings: str
     created_at: datetime
 
@@ -497,6 +499,187 @@ async def get_terms_by_id_public(terms_id: int, db: Session = Depends(get_db)):
     if not terms:
         raise HTTPException(status_code=404, detail="Terms entry not found")
     return terms
+
+# API Documentation endpoint
+@router.get("/api")
+async def api_documentation():
+    """Get comprehensive API documentation with all available endpoints"""
+    return {
+        "api_name": "Anand Jewels Public API",
+        "version": "1.0.0",
+        "description": "Complete public API for Anand Jewels gold rates, stores, and content management",
+        "base_url": "/api",
+        "endpoints": {
+            "gold_rates": {
+                "description": "Gold rate management endpoints",
+                "endpoints": [
+                    {
+                        "method": "GET",
+                        "path": "/api/gold-rates/latest",
+                        "description": "Get the latest gold rates for all purities (24K, 22K, 18K)"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/gold-rates/current",
+                        "description": "Get current gold rates in simplified format"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/gold-rates/history/7d",
+                        "description": "Get 7-day gold rate history"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/gold-rates/history/30d",
+                        "description": "Get 30-day gold rate history"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/gold-rates/history/{purity}",
+                        "description": "Get history for specific purity (24K/22K/18K)",
+                        "parameters": ["purity", "days (optional)"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/gold-rates/all",
+                        "description": "Get all gold rates with pagination",
+                        "parameters": ["page", "limit"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/gold-rates/purities",
+                        "description": "Get list of available gold purities"
+                    }
+                ]
+            },
+            "stores": {
+                "description": "Store location and information endpoints",
+                "endpoints": [
+                    {
+                        "method": "GET",
+                        "path": "/api/stores",
+                        "description": "Get all store locations with complete details",
+                        "response_fields": [
+                            "id", "store_name", "phone_number", "store_address", 
+                            "store_image", "youtube_link", "timings", "created_at"
+                        ]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/stores/{store_id}",
+                        "description": "Get specific store by ID",
+                        "parameters": ["store_id"]
+                    }
+                ]
+            },
+            "contact_enquiries": {
+                "description": "Customer contact and enquiry management",
+                "endpoints": [
+                    {
+                        "method": "POST",
+                        "path": "/api/contact-enquiries",
+                        "description": "Create new contact enquiry",
+                        "required_fields": ["name", "phone_number", "email", "preferred_store", "preferred_date_time"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/contact-enquiries",
+                        "description": "Get all contact enquiries",
+                        "parameters": ["limit (optional)"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/contact-enquiries/{enquiry_id}",
+                        "description": "Get specific enquiry by ID",
+                        "parameters": ["enquiry_id"]
+                    }
+                ]
+            },
+            "content_management": {
+                "description": "Website content management endpoints",
+                "endpoints": [
+                    {
+                        "method": "GET",
+                        "path": "/api/about",
+                        "description": "Get all about us entries",
+                        "response_fields": ["id", "title", "content", "image", "created_at"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/about/{about_id}",
+                        "description": "Get specific about entry by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/team",
+                        "description": "Get all team member entries",
+                        "response_fields": ["id", "position", "name", "content", "image", "created_at"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/team/{team_id}",
+                        "description": "Get specific team member by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/missions",
+                        "description": "Get all mission/vision entries",
+                        "response_fields": ["id", "title", "content", "image", "created_at"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/missions/{mission_id}",
+                        "description": "Get specific mission by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/terms",
+                        "description": "Get all terms & conditions entries",
+                        "response_fields": ["id", "title", "content", "image", "created_at"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/terms/{terms_id}",
+                        "description": "Get specific terms entry by ID"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/guides",
+                        "description": "Get all guide entries",
+                        "response_fields": ["id", "title", "content", "image", "created_at"]
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/guides/{guide_id}",
+                        "description": "Get specific guide by ID"
+                    }
+                ]
+            },
+            "utility": {
+                "description": "Utility and system endpoints",
+                "endpoints": [
+                    {
+                        "method": "GET",
+                        "path": "/api/health",
+                        "description": "API health check"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api",
+                        "description": "This API documentation endpoint"
+                    }
+                ]
+            }
+        },
+        "response_formats": {
+            "success": "JSON with requested data",
+            "error": "JSON with error message and status code",
+            "pagination": "Includes pagination metadata when applicable"
+        },
+        "authentication": "No authentication required for public endpoints",
+        "rate_limiting": "No rate limiting currently implemented",
+        "last_updated": datetime.now().isoformat()
+    }
 
 # Health check endpoint
 @router.get("/api/health")

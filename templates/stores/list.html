@@ -37,8 +37,9 @@
                                 <th>ID</th>
                                 <th>Store Name</th>
                                 <th>Address</th>
+                                <th class="d-none d-md-table-cell">Phone</th>
                                 <th>Timings</th>
-                                <th class="d-none d-md-table-cell">Image</th>
+                                <th class="d-none d-md-table-cell">Media</th>
                                 <th class="d-none d-lg-table-cell">Created</th>
                                 <th>Actions</th>
                             </tr>
@@ -60,19 +61,36 @@
                                 <td>
                                     <small class="text-muted">{{ store.store_address[:50] }}{% if store.store_address|length > 50 %}...{% endif %}</small>
                                 </td>
+                                <td class="d-none d-md-table-cell">
+                                    {% if store.phone_number %}
+                                        <small class="text-info">
+                                            <i class="bi bi-telephone"></i> {{ store.phone_number }}
+                                        </small>
+                                    {% else %}
+                                        <small class="text-muted">-</small>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <small class="text-success">{{ store.timings }}</small>
                                 </td>
                                 <td class="d-none d-md-table-cell">
-                                    {% if store.store_image %}
-                                        <span class="badge bg-success">
-                                            <i class="bi bi-image"></i> Available
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">
-                                            <i class="bi bi-image"></i> No Image
-                                        </span>
-                                    {% endif %}
+                                    <div class="d-flex flex-column gap-1">
+                                        {% if store.store_image %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-image"></i> Image
+                                            </span>
+                                        {% endif %}
+                                        {% if store.youtube_link %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-youtube"></i> Video
+                                            </span>
+                                        {% endif %}
+                                        {% if not store.store_image and not store.youtube_link %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-camera"></i> No Media
+                                            </span>
+                                        {% endif %}
+                                    </div>
                                 </td>
                                 <td class="d-none d-lg-table-cell">
                                     <div class="update-time">

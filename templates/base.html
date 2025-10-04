@@ -46,11 +46,6 @@
 
     {% if user %}
     <!-- Mobile Menu Button -->
-    <div class="d-md-none p-3">
-        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
-            <i class="bi bi-list"></i> Menu
-        </button>
-    </div>
     
     <!-- Mobile Sidebar -->
     <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar">
@@ -87,6 +82,26 @@
                         <i class="bi bi-book"></i> Guide Management
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'about' in request.url.path %}active{% endif %}" href="/admin/about">
+                        <i class="bi bi-info-circle"></i> About Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'team' in request.url.path %}active{% endif %}" href="/admin/team">
+                        <i class="bi bi-people"></i> Team Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'missions' in request.url.path %}active{% endif %}" href="/admin/missions">
+                        <i class="bi bi-bullseye"></i> Mission Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'terms' in request.url.path %}active{% endif %}" href="/admin/terms">
+                        <i class="bi bi-file-text"></i> Terms Management
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
@@ -121,6 +136,26 @@
                     <li class="nav-item">
                         <a class="nav-link {% if 'guides' in request.url.path %}active{% endif %}" href="/admin/guides">
                             <i class="bi bi-book"></i> Guide Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'about' in request.url.path %}active{% endif %}" href="/admin/about">
+                            <i class="bi bi-info-circle"></i> About Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'team' in request.url.path %}active{% endif %}" href="/admin/team">
+                            <i class="bi bi-people"></i> Team Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'missions' in request.url.path %}active{% endif %}" href="/admin/missions">
+                            <i class="bi bi-bullseye"></i> Mission Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'terms' in request.url.path %}active{% endif %}" href="/admin/terms">
+                            <i class="bi bi-file-text"></i> Terms Management
                         </a>
                     </li>
                 </ul>

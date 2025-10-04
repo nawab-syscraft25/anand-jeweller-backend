@@ -32,8 +32,11 @@ async def save_uploaded_file(file: UploadFile, upload_dir: str) -> str:
         content = await file.read()
         buffer.write(content)
     
-    # Return web path
-    return f"/static/images/guides/{unique_filename}"
+    # Return web path - adjust based on upload directory
+    if "stores" in upload_dir:
+        return f"/static/uploads/stores/{unique_filename}"
+    else:
+        return f"/static/images/guides/{unique_filename}"
 
 # Store Management Routes
 
@@ -68,8 +71,10 @@ async def add_store_form(request: Request, db: Session = Depends(get_db)):
 async def add_store(
     request: Request,
     store_name: str = Form(...),
+    phone_number: str = Form(""),
     store_address: str = Form(...),
-    store_image: str = Form(""),
+    store_image: UploadFile = File(None),
+    youtube_link: str = Form(""),
     timings: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -79,10 +84,17 @@ async def add_store(
         return RedirectResponse(url="/admin/login", status_code=302)
     
     try:
+        # Handle file upload for store image
+        image_path = None
+        if store_image and store_image.filename:
+            image_path = await save_uploaded_file(store_image, "static/uploads/stores")
+        
         new_store = Store(
             store_name=store_name,
+            phone_number=phone_number if phone_number else None,
             store_address=store_address,
-            store_image=store_image if store_image else None,
+            store_image=image_path,
+            youtube_link=youtube_link if youtube_link else None,
             timings=timings
         )
         
@@ -120,8 +132,10 @@ async def edit_store(
     request: Request,
     store_id: int,
     store_name: str = Form(...),
+    phone_number: str = Form(""),
     store_address: str = Form(...),
-    store_image: str = Form(""),
+    store_image: UploadFile = File(None),
+    youtube_link: str = Form(""),
     timings: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -135,9 +149,15 @@ async def edit_store(
         if not store:
             raise HTTPException(status_code=404, detail="Store not found")
         
+        # Handle file upload - only update image if new file is uploaded
+        if store_image and store_image.filename:
+            image_path = await save_uploaded_file(store_image, "static/uploads/stores")
+            store.store_image = image_path
+        
         store.store_name = store_name
+        store.phone_number = phone_number if phone_number else None
         store.store_address = store_address
-        store.store_image = store_image if store_image else None
+        store.youtube_link = youtube_link if youtube_link else None
         store.timings = timings
         
         db.commit()
@@ -145,6 +165,7 @@ async def edit_store(
         return RedirectResponse(url="/admin/stores", status_code=302)
         
     except Exception as e:
+        store = db.query(Store).filter(Store.id == store_id).first()
         return templates.TemplateResponse("stores/edit.html", {
             "request": request,
             "user": user,

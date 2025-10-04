@@ -46,8 +46,10 @@ class Store(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     store_name = Column(String, nullable=False)
+    phone_number = Column(String, nullable=True)
     store_address = Column(Text, nullable=False)
-    store_image = Column(String, nullable=True)  # Path to store image
+    store_image = Column(String, nullable=True)  # URL/Path to store image
+    youtube_link = Column(String, nullable=True)  # YouTube video link
     timings = Column(String, nullable=False)  # e.g., "Mon-Sat: 10:00 AM - 8:00 PM, Sun: 11:00 AM - 6:00 PM"
     created_at = Column(DateTime, default=func.now(), nullable=False)
     
@@ -81,3 +83,64 @@ class Guide(Base):
     
     def __repr__(self):
         return f"<Guide(title='{self.title}', image='{self.image}')>"
+
+class About(Base):
+    __tablename__ = "about"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    image = Column(String, nullable=True)  # Path to uploaded image
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<About(title='{self.title}', image='{self.image}')>"
+    
+class Team(Base):
+    __tablename__ = "team"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    position = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    image = Column(String, nullable=True)  # Path to uploaded image
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<Team(name='{self.name}', position='{self.position}')>"
+
+class Mission(Base):
+    __tablename__ = "missions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    image = Column(String, nullable=True)  # Path to uploaded image
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<Mission(title='{self.title}', image='{self.image}')>"
+
+class Terms(Base):
+    __tablename__ = "terms"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    image = Column(String, nullable=True)  # Path to uploaded image
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<Terms(title='{self.title}', image='{self.image}')>"
+
+class Vision(Base):
+    __tablename__ = "visions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    image = Column(String, nullable=True)  # Path to uploaded image
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    def __repr__(self):
+        return f"<Mission(title='{self.title}', image='{self.image}')>"

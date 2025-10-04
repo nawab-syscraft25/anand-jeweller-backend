@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, EmailStr, Field
 
 from database import get_db
-from models import GoldRate, Store, ContactEnquiry, Guide
+from models import GoldRate, Store, ContactEnquiry, Guide, About, Team, Mission, Terms
 
 router = APIRouter()
 
@@ -295,6 +295,51 @@ class GuideResponse(BaseModel):
         from_attributes = True
         arbitrary_types_allowed = True
 
+class AboutResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    image: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class TeamResponse(BaseModel):
+    id: int
+    position: str
+    name: str
+    content: str
+    image: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class MissionResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    image: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class TermsResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    image: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
 # Store Management APIs
 @router.get("/api/stores", response_model=List[StoreResponse])
 async def get_all_stores(db: Session = Depends(get_db)):
@@ -380,6 +425,78 @@ async def get_guide_by_id(guide_id: int, db: Session = Depends(get_db)):
     if not guide:
         raise HTTPException(status_code=404, detail="Guide not found")
     return guide
+
+# About APIs
+@router.get("/api/about", response_model=List[AboutResponse])
+async def get_all_about_public(
+    limit: int = Query(20, description="Maximum number of about entries to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all about entries (public access)"""
+    about_entries = db.query(About).order_by(desc(About.created_at)).limit(limit).all()
+    return about_entries
+
+@router.get("/api/about/{about_id}", response_model=AboutResponse)
+async def get_about_by_id_public(about_id: int, db: Session = Depends(get_db)):
+    """Get a specific about entry by ID (public access)"""
+    about = db.query(About).filter(About.id == about_id).first()
+    if not about:
+        raise HTTPException(status_code=404, detail="About entry not found")
+    return about
+
+# Team APIs
+@router.get("/api/team", response_model=List[TeamResponse])
+async def get_all_team_public(
+    limit: int = Query(20, description="Maximum number of team entries to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all team entries (public access)"""
+    team_entries = db.query(Team).order_by(desc(Team.created_at)).limit(limit).all()
+    return team_entries
+
+@router.get("/api/team/{team_id}", response_model=TeamResponse)
+async def get_team_by_id_public(team_id: int, db: Session = Depends(get_db)):
+    """Get a specific team entry by ID (public access)"""
+    team = db.query(Team).filter(Team.id == team_id).first()
+    if not team:
+        raise HTTPException(status_code=404, detail="Team entry not found")
+    return team
+
+# Mission APIs
+@router.get("/api/missions", response_model=List[MissionResponse])
+async def get_all_missions_public(
+    limit: int = Query(20, description="Maximum number of mission entries to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all mission entries (public access)"""
+    mission_entries = db.query(Mission).order_by(desc(Mission.created_at)).limit(limit).all()
+    return mission_entries
+
+@router.get("/api/missions/{mission_id}", response_model=MissionResponse)
+async def get_mission_by_id_public(mission_id: int, db: Session = Depends(get_db)):
+    """Get a specific mission entry by ID (public access)"""
+    mission = db.query(Mission).filter(Mission.id == mission_id).first()
+    if not mission:
+        raise HTTPException(status_code=404, detail="Mission entry not found")
+    return mission
+
+# Terms APIs
+@router.get("/api/terms", response_model=List[TermsResponse])
+async def get_all_terms_public(
+    limit: int = Query(20, description="Maximum number of terms entries to return"),
+    db: Session = Depends(get_db)
+):
+    """Get all terms entries (public access)"""
+    terms_entries = db.query(Terms).order_by(desc(Terms.created_at)).limit(limit).all()
+    return terms_entries
+
+@router.get("/api/terms/{terms_id}", response_model=TermsResponse)
+async def get_terms_by_id_public(terms_id: int, db: Session = Depends(get_db)):
+    """Get a specific terms entry by ID (public access)"""
+    terms = db.query(Terms).filter(Terms.id == terms_id).first()
+    if not terms:
+        raise HTTPException(status_code=404, detail="Terms entry not found")
+    return terms
 
 # Health check endpoint
 @router.get("/api/health")

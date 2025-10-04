@@ -36,7 +36,7 @@
                     </div>
                     {% endif %}
                     
-                    <form method="post" action="/admin/stores/add">
+                    <form method="post" action="/admin/stores/add" enctype="multipart/form-data">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="store_name" class="form-label">Store Name <span class="text-danger">*</span></label>
@@ -45,10 +45,10 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label for="store_image" class="form-label">Store Image Path</label>
-                                <input type="text" class="form-control" id="store_image" name="store_image" 
-                                       placeholder="e.g., /static/images/store1.jpg">
-                                <div class="form-text">Optional: Path to store image</div>
+                                <label for="phone_number" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                       placeholder="e.g., +91 9876543210">
+                                <div class="form-text">Optional: Store contact number</div>
                             </div>
                         </div>
                         
@@ -58,7 +58,27 @@
                                       placeholder="Enter complete store address with pincode" required></textarea>
                         </div>
                         
-                        <div class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="store_image" class="form-label">
+                                    <i class="bi bi-image me-1"></i>
+                                    Upload Store Image (Optional)
+                                </label>
+                                <input type="file" class="form-control" id="store_image" name="store_image" 
+                                       accept="image/*">
+                                <div class="form-text">Upload a photo of the store. Maximum file size: 5MB.</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="youtube_link" class="form-label">
+                                    <i class="bi bi-youtube me-1"></i>
+                                    YouTube Video Link (Optional)
+                                </label>
+                                <input type="url" class="form-control" id="youtube_link" name="youtube_link" 
+                                       placeholder="https://www.youtube.com/watch?v=...">
+                                <div class="form-text">Enter YouTube video link for store tour/overview</div>
+                            </div>
+                        </div>                        <div class="mb-3">
                             <label for="timings" class="form-label">Store Timings <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="timings" name="timings" 
                                    placeholder="e.g., Mon-Sat: 10:00 AM - 8:00 PM, Sun: 11:00 AM - 6:00 PM" required>
@@ -105,12 +125,32 @@
                 </div>
                 
                 <div class="feature-item">
+                    <div class="feature-icon bg-info">
+                        <i class="bi bi-telephone"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Contact Number</strong>
+                        <small>Include country code for better reach</small>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
                     <div class="feature-icon bg-warning">
                         <i class="bi bi-image"></i>
                     </div>
                     <div class="feature-content">
                         <strong>Store Image</strong>
-                        <small>Upload image to /static/images/ first</small>
+                        <small>Upload clear photo of the store front</small>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-danger">
+                        <i class="bi bi-youtube"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>YouTube Video</strong>
+                        <small>Optional store tour or overview video</small>
                     </div>
                 </div>
                 

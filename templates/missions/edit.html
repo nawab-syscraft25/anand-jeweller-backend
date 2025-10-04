@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Mission - Anand Jewels{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-pencil-square text-warning me-2"></i>
+                        Edit Mission
+                    </h1>
+                    <p class="text-muted mb-0">Update mission or vision statement</p>
+                </div>
+                <div>
+                    <a href="/admin/missions" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Missions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bullseye me-2"></i>
+                        Mission Details - {{ mission.title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="/admin/missions/edit/{{ mission.id }}" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">
+                                        <i class="bi bi-card-heading me-1"></i>
+                                        Mission Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="title" 
+                                           name="title" 
+                                           value="{{ mission.title }}"
+                                           required 
+                                           placeholder="Enter mission title">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">
+                                        <i class="bi bi-file-text me-1"></i>
+                                        Mission Statement <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="content" 
+                                              name="content" 
+                                              rows="10" 
+                                              required 
+                                              placeholder="Enter the complete mission statement or vision...">{{ mission.content }}</textarea>
+                                </div>
+
+                                {% if mission.image %}
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-image me-1"></i>
+                                        Current Mission Image
+                                    </label>
+                                    <div class="border rounded p-2">
+                                        <img src="{{ mission.image }}" alt="{{ mission.title }}" class="img-thumbnail" style="max-height: 150px;">
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">
+                                        <i class="bi bi-image me-1"></i>
+                                        {% if mission.image %}Replace Mission Image (Optional){% else %}Upload Mission Image (Optional){% endif %}
+                                    </label>
+                                    <input type="file" 
+                                           class="form-control" 
+                                           id="image" 
+                                           name="image" 
+                                           accept="image/*">
+                                    <div class="form-text">
+                                        {% if mission.image %}Upload a new image to replace the current mission image.{% else %}Upload an image that represents this mission.{% endif %} Maximum file size: 5MB.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Mission Information
+                                        </h6>
+                                        <p class="mb-2">
+                                            <strong>Created:</strong><br>
+                                            <small class="text-muted">{{ mission.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>ID:</strong> {{ mission.id }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="card bg-light mt-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="bi bi-lightbulb me-1"></i>
+                                            Tips
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                Keep missions relevant and current
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                Use inspiring and motivating language
+                                            </li>
+                                            <li>
+                                                <i class="bi bi-check-circle text-success me-1"></i>
+                                                Align with company values
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="/admin/missions" class="btn btn-secondary">
+                                        <i class="bi bi-x-circle"></i>
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="bi bi-check-circle"></i>
+                                        Update Mission
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Store JWT token for API calls
+window.jwtToken = "{{ jwt_token }}";
+</script>
+{% endblock %}

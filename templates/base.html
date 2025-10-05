@@ -20,8 +20,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/admin">
-                <i class="bi bi-gem"></i>
-                <strong>ANAND JEWELS</strong>
+                <img src="/static/images/logo.png" alt="Anand Jewels Logo" style="height: 65px;"/>
                 <small class="d-none d-md-inline-block ms-2">Gold Rate Management</small>
             </a>
             
@@ -31,9 +30,11 @@
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
-                    <span class="navbar-text me-3">
-                        <i class="bi bi-person-circle"></i> Welcome, <strong>{{ user.username }}</strong>
-                    </span>
+                    <a class="nav-link" href="/admin/logout">
+                        <span class="navbar-text me-3">
+                            <i class="bi bi-person-circle"></i> Welcome, <strong>{{ user.username }}</strong>
+                        </span>
+                    </a>
                     <a class="nav-link" href="/admin/logout">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </a>
@@ -203,7 +204,7 @@
             {% endif %}
             
             <!-- Main Content -->
-            <div class="{% if user %}col-md-9 col-lg-10{% else %}col-12{% endif %} {% if user %}main-content{% endif %} p-4">
+            <div class="{% if user %}col-md-9 col-lg-10{% else %}col-12{% endif %} {% if user %}main-content{% endif %} py-4">
                 {% block content %}{% endblock %}
             </div>
         </div>

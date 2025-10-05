@@ -152,7 +152,7 @@ body {
    ================================= */
 
 .welcome-card {
-    background: linear-gradient(135deg, var(--info), #2563EB);
+    background: linear-gradient(135deg, #cb2121, #d02222);
     color: var(--white);
     padding: var(--space-8);
     border-radius: var(--radius-2xl);

@@ -1,54 +1,189 @@
-{% extends "base.html" %}
-
-{% block title %}Login - Gold Rate Management System{% endblock %}
-
-{% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <div class="card mt-5">
-                <div class="card-header text-center">
-                    <h4><i class="bi bi-gem gold-accent"></i> <span class="gold-accent">ANAND</span> JEWELS</h4>
-                    <small>Admin Portal</small>
-                </div>
-                <div class="card-body">
-                    {% if error %}
-                    <div class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Anand Jewels Admin Portal</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+</head>
+<body>
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #cb2121, #d02222);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4 col-lg-5">
+                <!-- Login Card -->
+                <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
+                    <!-- Card Header -->
+                    <div class="card-header text-center py-4" style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); border: none;">
+                        <div class="mb-3">
+                            <div class="d-inline-block p-4 rounded-circle" style="background: linear-gradient(135deg, #cb2121, #d02222);">
+                                <img src="/static/images/logo.png" alt="Anand Jewels Logo" style="height: 60px;"/>
+                            </div>
+                        </div>
+                        <h3 class="mb-1" style="color: #333; font-weight: 600;">
+                            <span style="color: #d02222; font-weight: 700;">ANAND</span> JEWELS
+                        </h3>
+                        <p class="mb-0 text-muted">Admin Portal Access</p>
                     </div>
-                    {% endif %}
-                    
-                    <form method="post" action="/admin/login">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-person"></i>
-                                </span>
-                                <input type="text" class="form-control" id="username" name="username" required>
-                            </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body p-4">
+                        {% if error %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 10px; border: none;">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Login Failed:</strong> {{ error }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
+                        {% endif %}
                         
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-lock"></i>
-                                </span>
-                                <input type="password" class="form-control" id="password" name="password" required>
+                        <form method="post" action="/admin/login" class="needs-validation" novalidate>
+                            <!-- Username Field -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-person-circle me-1"></i>Username
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-person text-primary"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 ps-0" 
+                                           id="username" name="username" 
+                                           placeholder="Enter your username"
+                                           style="border-radius: 0 10px 10px 0;"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Please provide a valid username.
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
-                            </button>
-                        </div>
-                    </form>
+                            
+                            <!-- Password Field -->
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-shield-lock me-1"></i>Password
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-lock text-primary"></i>
+                                    </span>
+                                    <input type="password" class="form-control border-start-0 ps-0" 
+                                           id="password" name="password" 
+                                           placeholder="Enter your password"
+                                           style="border-radius: 0 10px 10px 0;"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Please provide your password.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Login Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg" 
+                                        style="border-radius: 10px; background: linear-gradient(135deg, #cb2121, #d02222); border: none; font-weight: 600;">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Sign In to Dashboard
+                                </button>
+                            </div>
+
+                            <!-- Security Notice -->
+                            <div class="text-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    Secure admin access only
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="card-footer text-center py-3" style="background: #f8f9fa; border: none;">
+                        <small class="text-muted">
+                            © 2025 Anand Jewels. All rights reserved.
+                        </small>
+                    </div>
                 </div>
-               
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+
+<!-- Form Validation Script -->
+<script>
+// Bootstrap form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Auto-dismiss alerts after 5 seconds
+setTimeout(function() {
+    var alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        var bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    });
+}, 5000);
+</script>
+
+<style>
+/* Custom styles for login page */
+.card {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.input-group-text {
+    background: #f8f9fa;
+    border: 1px solid #ced4da;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .card {
+        margin: 1rem;
+    }
+    
+    .container {
+        padding: 0;
+    }
+}
+</style>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

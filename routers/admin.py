@@ -1502,9 +1502,9 @@ async def delete_achievement(
     
     return RedirectResponse(url="/admin/achievements", status_code=302)
 
-# ======================
+# ========================
 # Notification Management
-# ======================
+# =======================
 
 @router.get("/admin/notifications", response_class=HTMLResponse)
 async def list_notifications(
@@ -1658,3 +1658,66 @@ async def delete_notification(
     db.commit()
     
     return RedirectResponse(url="/admin/notifications", status_code=302)
+
+# ============================
+# Contact Enquiry Management
+# ============================
+
+@router.get("/admin/contact-enquiries", response_class=HTMLResponse)
+async def list_contact_enquiries(
+    request: Request, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """List all contact enquiries"""
+    enquiries = db.query(ContactEnquiry).order_by(desc(ContactEnquiry.created_at)).all()
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("contact_enquiries/list.html", {
+        "request": request,
+        "user": current_user,
+        "enquiries": enquiries,
+        "page_title": "Contact Enquiries Management",
+        "jwt_token": jwt_token
+    })
+
+@router.get("/admin/contact-enquiries/view/{enquiry_id}", response_class=HTMLResponse)
+async def view_contact_enquiry(
+    request: Request, 
+    enquiry_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """View contact enquiry details"""
+    enquiry = db.query(ContactEnquiry).filter(ContactEnquiry.id == enquiry_id).first()
+    
+    if not enquiry:
+        raise HTTPException(status_code=404, detail="Contact enquiry not found")
+    
+    jwt_token = request.session.get("jwt_token", "")
+    
+    return templates.TemplateResponse("contact_enquiries/view.html", {
+        "request": request,
+        "user": current_user,
+        "enquiry": enquiry,
+        "page_title": f"Contact Enquiry - {enquiry.name}",
+        "jwt_token": jwt_token
+    })
+
+@router.post("/admin/contact-enquiries/delete/{enquiry_id}")
+async def delete_contact_enquiry(
+    request: Request, 
+    enquiry_id: int, 
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Delete contact enquiry"""
+    enquiry = db.query(ContactEnquiry).filter(ContactEnquiry.id == enquiry_id).first()
+    
+    if not enquiry:
+        raise HTTPException(status_code=404, detail="Contact enquiry not found")
+    
+    db.delete(enquiry)
+    db.commit()
+    
+    return RedirectResponse(url="/admin/contact-enquiries", status_code=302)

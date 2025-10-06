@@ -36,6 +36,7 @@
                                 <th>ID</th>
                                 <th>Customer</th>
                                 <th>Contact</th>
+                                <th>Subject</th>
                                 <th>Preferred Store</th>
                                 <th class="d-none d-lg-table-cell">Preferred Date/Time</th>
                                 <th class="d-none d-md-table-cell">Received</th>
@@ -65,6 +66,12 @@
                                             <small>{{ enquiry.phone_number }}</small>
                                         </div>
                                     </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        <i class="bi bi-chat-text"></i>
+                                        {{ enquiry.subject or "Contact enquiry" }}
+                                    </span>
                                 </td>
                                 <td>
                                     <span class="badge bg-warning text-dark">

@@ -64,6 +64,7 @@ class ContactEnquiry(Base):
     name = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
     email = Column(String, nullable=False)
+    subject = Column(String, nullable=True, default="Contact enquiry")
     preferred_store = Column(String, nullable=False)
     preferred_date_time = Column(String, nullable=False)  # Stored as string as requested
     created_at = Column(DateTime, default=func.now(), nullable=False)

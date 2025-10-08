@@ -160,11 +160,12 @@
                                         <a href="/admin/contact-enquiries/view/{{ enquiry.id }}" class="btn btn-outline-info">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="/admin/contact-enquiries/delete/{{ enquiry.id }}" 
-                                           class="btn btn-outline-danger"
-                                           onclick="return confirm('Are you sure you want to delete this enquiry?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <form method="POST" action="/admin/contact-enquiries/delete/{{ enquiry.id }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Are you sure you want to delete this enquiry?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

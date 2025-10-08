@@ -90,10 +90,38 @@
                                     {{ enquiry.preferred_date_time }}
                                 </div>
                             </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Number of People</label>
+                                <div class="p-2 bg-light rounded">
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-people me-1"></i>
+                                        {{ enquiry.no_of_people or 1 }} 
+                                        {{ 'person' if (enquiry.no_of_people or 1) == 1 else 'people' }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
                     <hr>
+                    
+                    <!-- Message Section -->
+                    {% if enquiry.message and enquiry.message != 'NaN' %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-warning mb-3">
+                                <i class="bi bi-chat-dots me-2"></i>Customer Message
+                            </h6>
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted">
+                                    <i class="bi bi-quote me-2"></i>
+                                    {{ enquiry.message }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                     
                     <div class="row">
                         <div class="col-12">

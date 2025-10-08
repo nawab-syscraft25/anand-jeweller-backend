@@ -95,6 +95,7 @@
                                 <th>Contact</th>
                                 <th>Subject</th>
                                 <th>Preferred Store</th>
+                                <th class="d-none d-xl-table-cell">People</th>
                                 <th class="d-none d-lg-table-cell">Preferred Date/Time</th>
                                 <th class="d-none d-md-table-cell">Received</th>
                                 <th>Actions</th>
@@ -134,6 +135,12 @@
                                     <span class="badge bg-warning text-dark">
                                         <i class="bi bi-shop"></i>
                                         {{ enquiry.preferred_store }}
+                                    </span>
+                                </td>
+                                <td class="d-none d-xl-table-cell">
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-people text-white me-1"></i>
+                                        {{ enquiry.no_of_people or 1 }}
                                     </span>
                                 </td>
                                 <td class="d-none d-lg-table-cell">

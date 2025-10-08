@@ -83,10 +83,12 @@ class ContactEnquiry(Base):
     subject = Column(String, nullable=True, default="Contact enquiry")
     preferred_store = Column(String, nullable=False)
     preferred_date_time = Column(String, nullable=False)  # Stored as string as requested
+    no_of_people = Column(Integer, nullable=True, default=1)
+    message = Column(String, nullable=True, default="NaN")
     created_at = Column(DateTime, default=func.now(), nullable=False)
     
     def __repr__(self):
-        return f"<ContactEnquiry(name='{self.name}', phone='{self.phone_number}', preferred_store='{self.preferred_store}')>"
+        return f"<ContactEnquiry(name='{self.name}', phone='{self.phone_number}', preferred_store='{self.preferred_store}', people={self.no_of_people})>"
 
 
 class Guide(Base):

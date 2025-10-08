@@ -1852,7 +1852,7 @@ async def export_contact_enquiries_csv(
     # Write CSV headers  
     writer.writerow([
         'ID', 'Name', 'Email', 'Phone Number', 'Subject', 
-        'Preferred Store', 'Preferred Date/Time', 'Created At'
+        'Preferred Store', 'No of People', 'Message', 'Preferred Date/Time', 'Created At'
     ])
     
     # Write enquiry data with DD/MM/YYYY format
@@ -1864,6 +1864,8 @@ async def export_contact_enquiries_csv(
             enquiry.phone_number,
             enquiry.subject or 'Contact enquiry',
             enquiry.preferred_store or '',
+            enquiry.no_of_people or 1,
+            enquiry.message or 'NaN',
             enquiry.preferred_date_time or '',
             enquiry.created_at.strftime('%d/%m/%Y %H:%M:%S') if enquiry.created_at else ''
         ])

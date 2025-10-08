@@ -259,6 +259,8 @@ class ContactEnquiryCreate(BaseModel):
     subject: Optional[str] = Field("Contact enquiry", max_length=200, description="Subject of the enquiry")
     preferred_store: str = Field(..., min_length=5, max_length=200, description="Name of preferred store")
     preferred_date_time: str = Field(..., min_length=10, max_length=100, description="Preferred appointment date and time")
+    no_of_people: Optional[int] = Field(1, ge=1, le=50, description="Number of people for the appointment")
+    message: Optional[str] = Field("NaN", max_length=1000, description="Additional message or requirements")
 
 class ContactEnquiryResponse(BaseModel):
     id: int
@@ -268,6 +270,8 @@ class ContactEnquiryResponse(BaseModel):
     subject: Optional[str]
     preferred_store: str
     preferred_date_time: str
+    no_of_people: Optional[int]
+    message: Optional[str]
     created_at: datetime
 
     class Config:
@@ -429,7 +433,9 @@ async def create_contact_enquiry(
         email=enquiry.email,
         subject=enquiry.subject,
         preferred_store=enquiry.preferred_store,
-        preferred_date_time=enquiry.preferred_date_time
+        preferred_date_time=enquiry.preferred_date_time,
+        no_of_people=enquiry.no_of_people,
+        message=enquiry.message
     )
     
     db.add(db_enquiry)

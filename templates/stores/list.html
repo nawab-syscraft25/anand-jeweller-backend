@@ -85,7 +85,12 @@
                                                 <i class="bi bi-youtube"></i> Video
                                             </span>
                                         {% endif %}
-                                        {% if not store.store_image and not store.youtube_link %}
+                                        {% if store.map_link %}
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-geo-alt"></i> Map
+                                            </span>
+                                        {% endif %}
+                                        {% if not store.store_image and not store.youtube_link and not store.map_link %}
                                             <span class="badge bg-secondary">
                                                 <i class="bi bi-camera"></i> No Media
                                             </span>

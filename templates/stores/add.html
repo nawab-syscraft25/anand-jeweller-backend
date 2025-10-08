@@ -78,7 +78,19 @@
                                        placeholder="https://www.youtube.com/watch?v=...">
                                 <div class="form-text">Enter YouTube video link for store tour/overview</div>
                             </div>
-                        </div>                        <div class="mb-3">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="map_link" class="form-label">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                Map Link (Optional)
+                            </label>
+                            <input type="url" class="form-control" id="map_link" name="map_link" 
+                                   placeholder="https://maps.google.com/... or https://goo.gl/maps/...">
+                            <div class="form-text">Enter Google Maps link or any map service URL for store location</div>
+                        </div>
+                        
+                        <div class="mb-3">
                             <label for="timings" class="form-label">Store Timings <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="timings" name="timings" 
                                    placeholder="e.g., Mon-Sat: 10:00 AM - 8:00 PM, Sun: 11:00 AM - 6:00 PM" required>
@@ -151,6 +163,16 @@
                     <div class="feature-content">
                         <strong>YouTube Video</strong>
                         <small>Optional store tour or overview video</small>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon bg-info">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <strong>Map Link</strong>
+                        <small>Google Maps or location service URL</small>
                     </div>
                 </div>
                 

@@ -77,6 +77,7 @@ async def add_store(
     store_address: str = Form(...),
     store_image: UploadFile = File(None),
     youtube_link: str = Form(""),
+    map_link: str = Form(""),
     timings: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -97,6 +98,7 @@ async def add_store(
             store_address=store_address,
             store_image=image_path,
             youtube_link=youtube_link if youtube_link else None,
+            map_link=map_link if map_link else None,
             timings=timings
         )
         
@@ -140,6 +142,7 @@ async def edit_store(
     store_address: str = Form(...),
     store_image: UploadFile = File(None),
     youtube_link: str = Form(""),
+    map_link: str = Form(""),
     timings: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -162,6 +165,7 @@ async def edit_store(
         store.phone_number = phone_number if phone_number else None
         store.store_address = store_address
         store.youtube_link = youtube_link if youtube_link else None
+        store.map_link = map_link if map_link else None
         store.timings = timings
         
         db.commit()

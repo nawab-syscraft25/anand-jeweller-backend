@@ -285,6 +285,7 @@ class StoreResponse(BaseModel):
     store_address: str
     store_image: Optional[str]
     youtube_link: Optional[str]
+    map_link: Optional[str]
     timings: str
     created_at: datetime
 
@@ -686,7 +687,7 @@ async def api_documentation():
                         "description": "Get all store locations with complete details",
                         "response_fields": [
                             "id", "store_name", "phone_number", "store_address", 
-                            "store_image", "youtube_link", "timings", "created_at"
+                            "store_image", "youtube_link", "map_link", "timings", "created_at"
                         ]
                     },
                     {

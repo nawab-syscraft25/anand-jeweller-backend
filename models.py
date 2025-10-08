@@ -66,6 +66,7 @@ class Store(Base):
     store_address = Column(Text, nullable=False)
     store_image = Column(String, nullable=True)  # URL/Path to store image
     youtube_link = Column(String, nullable=True)  # YouTube video link
+    map_link = Column(String, nullable=True, default="Na")  # Google Maps or location link
     timings = Column(String, nullable=False)  # e.g., "Mon-Sat: 10:00 AM - 8:00 PM, Sun: 11:00 AM - 6:00 PM"
     created_at = Column(DateTime, default=func.now(), nullable=False)
     

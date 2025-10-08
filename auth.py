@@ -2,7 +2,7 @@ import bcrypt
 from datetime import timedelta
 from fastapi import Request, HTTPException, status
 from sqlalchemy.orm import Session
-from models import AdminUser
+from models import AdminUser, UserRole
 from database import get_db
 from jwt_auth import JWTAuth, ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -41,11 +41,12 @@ def login_user(request: Request, user: AdminUser):
     """Login user by setting session and generating JWT token"""
     request.session["user_id"] = user.id
     request.session["username"] = user.username
+    request.session["user_role"] = user.role
     
     # Generate JWT token for API access
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = JWTAuth.create_access_token(
-        data={"sub": user.username, "user_id": user.id},
+        data={"sub": user.username, "user_id": user.id, "role": user.role},
         expires_delta=access_token_expires
     )
     
@@ -60,3 +61,33 @@ def logout_user(request: Request):
 def is_authenticated(request: Request) -> bool:
     """Check if user is authenticated"""
     return "user_id" in request.session
+
+def is_super_admin(request: Request) -> bool:
+    """Check if user is Super Admin"""
+    user_role = request.session.get("user_role")
+    return user_role == UserRole.SUPER_ADMIN.value
+
+def is_contact_manager(request: Request) -> bool:
+    """Check if user is Contact Manager"""
+    user_role = request.session.get("user_role")
+    return user_role == UserRole.CONTACT_MANAGER.value
+
+def require_super_admin(request: Request, db: Session):
+    """Require Super Admin role for access"""
+    user = get_current_user(request, db)
+    if user.role != UserRole.SUPER_ADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super Admin access required"
+        )
+    return user
+
+def require_contact_access(request: Request, db: Session):
+    """Require Contact Manager or Super Admin role for contact access"""
+    user = get_current_user(request, db)
+    if user.role not in [UserRole.SUPER_ADMIN.value, UserRole.CONTACT_MANAGER.value]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Contact access required"
+        )
+    return user

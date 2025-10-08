@@ -152,27 +152,12 @@
                 <h5 class="table-title">
                     <i class="bi bi-layers me-2" style="color: var(--info);"></i>Content Management Overview
                 </h5>
-                <small class="table-subtitle">Manage website content, team information, and company details</small>
+                <small class="table-subtitle">Manage essential website content and customer communications</small>
             </div>
             <div class="col-md-4 text-md-end">
                 <div class="btn-group flex-wrap">
-                    <a href="/admin/about" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-info-circle me-1"></i>About
-                    </a>
-                    <a href="/admin/team" class="btn btn-outline-success btn-sm">
-                        <i class="bi bi-people me-1"></i>Team
-                    </a>
-                    <a href="/admin/missions" class="btn btn-outline-warning btn-sm">
-                        <i class="bi bi-bullseye me-1"></i>Missions
-                    </a>
                     <a href="/admin/terms" class="btn btn-outline-info btn-sm">
                         <i class="bi bi-file-text me-1"></i>Terms
-                    </a>
-                    <a href="/admin/awards" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-trophy me-1"></i>Awards
-                    </a>
-                    <a href="/admin/achievements" class="btn btn-outline-dark btn-sm">
-                        <i class="bi bi-award me-1"></i>Achievements
                     </a>
                     <a href="/admin/notifications" class="btn btn-outline-danger btn-sm">
                         <i class="bi bi-bell me-1"></i>Notifications
@@ -184,48 +169,8 @@
     
     <div class="p-0">
         <div class="row g-0">
-            <!-- First Row -->
-            <div class="col-lg-3 col-md-6">
-                <div class="border-end border-bottom p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-info-circle" style="font-size: 2rem; color: var(--primary);"></i>
-                    </div>
-                    <h6 class="fw-bold">About Entries</h6>
-                    <div class="h4 mb-2">{{ total_about|default(0) }}</div>
-                    <div class="d-grid gap-2">
-                        <a href="/admin/about" class="btn btn-sm btn-outline-primary">Manage</a>
-                        <a href="/admin/about/add" class="btn btn-sm btn-primary">Add New</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="border-end border-bottom p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-people" style="font-size: 2rem; color: var(--success);"></i>
-                    </div>
-                    <h6 class="fw-bold">Team Members</h6>
-                    <div class="h4 mb-2">{{ total_team|default(0) }}</div>
-                    <div class="d-grid gap-2">
-                        <a href="/admin/team" class="btn btn-sm btn-outline-success">Manage</a>
-                        <a href="/admin/team/add" class="btn btn-sm btn-success">Add New</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="border-end border-bottom p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-bullseye" style="font-size: 2rem; color: var(--warning);"></i>
-                    </div>
-                    <h6 class="fw-bold">Mission Statements</h6>
-                    <div class="h4 mb-2">{{ total_missions|default(0) }}</div>
-                    <div class="d-grid gap-2">
-                        <a href="/admin/missions" class="btn btn-sm btn-outline-warning">Manage</a>
-                        <a href="/admin/missions/add" class="btn btn-sm btn-warning">Add New</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="border-bottom p-4 text-center">
+            <div class="col-lg-6 col-md-6">
+                <div class="border-end p-4 text-center">
                     <div class="mb-3">
                         <i class="bi bi-file-text" style="font-size: 2rem; color: var(--info);"></i>
                     </div>
@@ -237,35 +182,7 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Second Row -->
-            <div class="col-lg-4 col-md-6">
-                <div class="border-end p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-trophy" style="font-size: 2rem; color: var(--secondary);"></i>
-                    </div>
-                    <h6 class="fw-bold">Awards</h6>
-                    <div class="h4 mb-2">{{ total_awards|default(0) }}</div>
-                    <div class="d-grid gap-2">
-                        <a href="/admin/awards" class="btn btn-sm btn-outline-secondary">Manage</a>
-                        <a href="/admin/awards/add" class="btn btn-sm btn-secondary">Add New</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="border-end p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-award" style="font-size: 2rem; color: var(--dark);"></i>
-                    </div>
-                    <h6 class="fw-bold">Achievements</h6>
-                    <div class="h4 mb-2">{{ total_achievements|default(0) }}</div>
-                    <div class="d-grid gap-2">
-                        <a href="/admin/achievements" class="btn btn-sm btn-outline-dark">Manage</a>
-                        <a href="/admin/achievements/add" class="btn btn-sm btn-dark">Add New</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-12">
+            <div class="col-lg-6 col-md-6">
                 <div class="p-4 text-center">
                     <div class="mb-3">
                         <i class="bi bi-bell" style="font-size: 2rem; color: var(--danger);"></i>

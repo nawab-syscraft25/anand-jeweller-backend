@@ -52,6 +52,7 @@ async def list_stores(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("stores/list.html", {
         "request": request,
         "user": user,
+        "user_role": user.role,
         "stores": stores
     })
 
@@ -64,7 +65,8 @@ async def add_store_form(request: Request, db: Session = Depends(get_db)):
     
     return templates.TemplateResponse("stores/add.html", {
         "request": request,
-        "user": user
+        "user": user,
+        "user_role": user.role
     })
 
 @router.post("/stores/add")
@@ -107,6 +109,7 @@ async def add_store(
         return templates.TemplateResponse("stores/add.html", {
             "request": request,
             "user": user,
+            "user_role": user.role,
             "error": f"Error adding store: {str(e)}"
         })
 
@@ -124,6 +127,7 @@ async def edit_store_form(request: Request, store_id: int, db: Session = Depends
     return templates.TemplateResponse("stores/edit.html", {
         "request": request,
         "user": user,
+        "user_role": user.role,
         "store": store
     })
 
@@ -169,6 +173,7 @@ async def edit_store(
         return templates.TemplateResponse("stores/edit.html", {
             "request": request,
             "user": user,
+            "user_role": user.role,
             "store": store,
             "error": f"Error updating store: {str(e)}"
         })
@@ -193,60 +198,6 @@ async def delete_store(request: Request, store_id: int, db: Session = Depends(ge
     except Exception as e:
         return RedirectResponse(url="/admin/stores?error=delete_failed", status_code=302)
 
-# Contact Enquiries Routes
-
-@router.get("/contact-enquiries")
-async def list_contact_enquiries(request: Request, db: Session = Depends(get_db)):
-    """List all contact enquiries"""
-    user = get_current_user(request, db)
-    if not user:
-        return RedirectResponse(url="/admin/login", status_code=302)
-    
-    enquiries = db.query(ContactEnquiry).order_by(ContactEnquiry.created_at.desc()).all()
-    
-    return templates.TemplateResponse("contact_enquiries/list.html", {
-        "request": request,
-        "user": user,
-        "enquiries": enquiries
-    })
-
-@router.get("/contact-enquiries/view/{enquiry_id}")
-async def view_contact_enquiry(request: Request, enquiry_id: int, db: Session = Depends(get_db)):
-    """View single contact enquiry"""
-    user = get_current_user(request, db)
-    if not user:
-        return RedirectResponse(url="/admin/login", status_code=302)
-    
-    enquiry = db.query(ContactEnquiry).filter(ContactEnquiry.id == enquiry_id).first()
-    if not enquiry:
-        raise HTTPException(status_code=404, detail="Contact enquiry not found")
-    
-    return templates.TemplateResponse("contact_enquiries/view.html", {
-        "request": request,
-        "user": user,
-        "enquiry": enquiry
-    })
-
-@router.get("/contact-enquiries/delete/{enquiry_id}")
-async def delete_contact_enquiry(request: Request, enquiry_id: int, db: Session = Depends(get_db)):
-    """Delete contact enquiry"""
-    user = get_current_user(request, db)
-    if not user:
-        return RedirectResponse(url="/admin/login", status_code=302)
-    
-    try:
-        enquiry = db.query(ContactEnquiry).filter(ContactEnquiry.id == enquiry_id).first()
-        if not enquiry:
-            raise HTTPException(status_code=404, detail="Contact enquiry not found")
-        
-        db.delete(enquiry)
-        db.commit()
-        
-        return RedirectResponse(url="/admin/contact-enquiries", status_code=302)
-        
-    except Exception as e:
-        return RedirectResponse(url="/admin/contact-enquiries?error=delete_failed", status_code=302)
-
 # Guide Management Routes
 
 @router.get("/guides")
@@ -261,6 +212,7 @@ async def list_guides(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("guides/list.html", {
         "request": request,
         "user": user,
+        "user_role": user.role,
         "guides": guides
     })
 
@@ -273,7 +225,8 @@ async def add_guide_form(request: Request, db: Session = Depends(get_db)):
     
     return templates.TemplateResponse("guides/add.html", {
         "request": request,
-        "user": user
+        "user": user,
+        "user_role": user.role
     })
 
 @router.post("/guides/add")
@@ -311,6 +264,7 @@ async def add_guide(
         return templates.TemplateResponse("guides/add.html", {
             "request": request,
             "user": user,
+            "user_role": user.role,
             "error": f"Error adding guide: {str(e)}"
         })
 
@@ -328,6 +282,7 @@ async def edit_guide_form(request: Request, guide_id: int, db: Session = Depends
     return templates.TemplateResponse("guides/edit.html", {
         "request": request,
         "user": user,
+        "user_role": user.role,
         "guide": guide
     })
 
@@ -373,6 +328,7 @@ async def edit_guide(
         return templates.TemplateResponse("guides/edit.html", {
             "request": request,
             "user": user,
+            "user_role": user.role,
             "guide": guide,
             "error": f"Error updating guide: {str(e)}"
         })

@@ -30,7 +30,7 @@ def create_sample_data():
         db.query(GoldRate).delete()
         db.commit()
         
-        print("Creating sample gold rate data for the last 30 days...")
+        print("Creating sample gold rate data for the last 30 days including today...")
         
         # Base rates (realistic Indian gold prices as of 2025)
         base_24k_selling = 7200.00
@@ -45,8 +45,8 @@ def create_sample_data():
         base_18k_exchange = 5000.00
         base_18k_making = 400.00
         
-        # Create data for last 30 days
-        for days_ago in range(30, 0, -1):
+        # Create data for last 30 days including today (0 days ago)
+        for days_ago in range(30, -1, -1):  # Changed to include 0 (today)
             # Calculate the date
             release_date = datetime.now() - timedelta(days=days_ago)
             
@@ -80,6 +80,12 @@ def create_sample_data():
                 microsecond=0
             )
             
+            # Create realistic created_at timestamp (simulate records added shortly after release)
+            created_at_time = release_datetime + timedelta(
+                hours=random.randint(0, 4),  # 0-4 hours after release
+                minutes=random.randint(0, 59)
+            )
+            
             # Create consolidated gold rate entry
             gold_rate = GoldRate(
                 # 24K Gold rates
@@ -99,6 +105,7 @@ def create_sample_data():
                 
                 # Timestamps
                 release_datetime=release_datetime,
+                created_at=created_at_time,
             )
             
             db.add(gold_rate)
@@ -206,19 +213,17 @@ def create_admin_user():
         db.close()
 
 if __name__ == "__main__":
-    print("🚀 Starting sample data creation...")
+    print("🚀 Starting gold rate sample data creation...")
     print("=" * 50)
     
-    # Create all sample data
+    # Create only gold rate sample data
     create_sample_data()
-    create_store_sample_data() 
-    create_admin_user()
     
     print("=" * 50)
-    print("🎉 All sample data created successfully!")
+    print("🎉 Gold rate sample data created successfully!")
     print("\n📝 You can now test the following:")
-    print("1. Dashboard: http://localhost:8000/admin")
-    print("2. API Latest: http://localhost:8000/api/gold-rates/latest")
-    print("3. API History: http://localhost:8000/api/gold-rates/history/7d")
+    print("1. API Latest: http://localhost:8000/api/gold-rates/latest")
+    print("2. API 7-day History: http://localhost:8000/api/gold-rates/history/7d")
+    print("3. API 30-day History: http://localhost:8000/api/gold-rates/history/30d")
     print("4. API Current: http://localhost:8000/api/gold-rates/current")
-    print("5. Login with: username=admin, password=admin123")
+    print("5. API All with pagination: http://localhost:8000/api/gold-rates/all?page=1&limit=10")

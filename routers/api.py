@@ -47,7 +47,7 @@ async def get_latest_rates(db: Session = Depends(get_db)) -> Dict[str, Any]:
 # History for last N days
 @router.get("/api/gold-rates/history/7d")
 async def get_7_day_history(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    """Get consolidated gold rates history for the last 7 days"""
+    """Get consolidated gold rates history for the last 7 days including today's prices"""
     return await get_history_by_days(db, 7)
 
 @router.get("/api/gold-rates/history/30d")
@@ -68,9 +68,9 @@ async def get_history_by_purity(
     if purity not in ["24K", "22K", "18K"]:
         raise HTTPException(status_code=400, detail="Invalid purity. Must be 24K, 22K, or 18K")
     
-    # Calculate date range
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=days)
+    # Calculate date range - ensure we include today's full day
+    end_date = datetime.now().replace(hour=23, minute=59, second=59, microsecond=999999)
+    start_date = (end_date - timedelta(days=days-1)).replace(hour=0, minute=0, second=0, microsecond=0)
     
     # Query consolidated rates within date range
     rates = db.query(GoldRate).filter(
@@ -113,11 +113,11 @@ async def get_history_by_purity(
 
 # Helper function for history queries
 async def get_history_by_days(db: Session, days: int) -> List[Dict[str, Any]]:
-    """Get consolidated gold rates history for the specified number of days"""
+    """Get consolidated gold rates history for the specified number of days including today"""
     
-    # Calculate date range
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=days)
+    # Calculate date range - ensure we include today's full day
+    end_date = datetime.now().replace(hour=23, minute=59, second=59, microsecond=999999)
+    start_date = (end_date - timedelta(days=days-1)).replace(hour=0, minute=0, second=0, microsecond=0)
     
     # Query all consolidated rates within date range
     rates = db.query(GoldRate).filter(

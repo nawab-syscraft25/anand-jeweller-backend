@@ -24,6 +24,63 @@
         </div>
     </div>
 
+    <!-- Filter and Export Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body py-3">
+                    <form method="GET" action="/admin/contact-enquiries" class="row align-items-end g-3">
+                        <div class="col-md-2">
+                            <label for="from_date" class="form-label fw-semibold">
+                                <i class="bi bi-calendar3 me-1"></i>From Date
+                            </label>
+                            <input type="date" class="form-control" id="from_date" name="from_date" 
+                                   value="{{ request.query_params.get('from_date', '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="to_date" class="form-label fw-semibold">
+                                <i class="bi bi-calendar3 me-1"></i>To Date
+                            </label>
+                            <input type="date" class="form-control" id="to_date" name="to_date" 
+                                   value="{{ request.query_params.get('to_date', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="subject" class="form-label fw-semibold">
+                                <i class="bi bi-chat-text me-1"></i>Subject
+                            </label>
+                            <select class="form-select" id="subject" name="subject">
+                                <option value="">All Subjects</option>
+                                {% for subj in available_subjects %}
+                                <option value="{{ subj }}" {% if request.query_params.get('subject') == subj %}selected{% endif %}>
+                                    {{ subj if subj else 'No Subject' }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-funnel me-1"></i>Filter
+                                </button>
+                                <a href="/admin/contact-enquiries" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>Clear
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex justify-content-end">
+                                <a href="/admin/contact-enquiries/export{% if request.query_params %}?{{ request.query_params }}{% endif %}" 
+                                   class="btn btn-success">
+                                    <i class="bi bi-download me-1"></i>Export CSV
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Enquiries Table -->
     <div class="row">
         <div class="col-12">
@@ -87,7 +144,7 @@
                                 </td>
                                 <td class="d-none d-md-table-cell">
                                     <div class="update-time">
-                                        {{ enquiry.created_at.strftime('%b %d, %Y') }}
+                                        {{ enquiry.created_at.strftime('%d/%m/%Y') }}
                                         <small>{{ enquiry.created_at.strftime('%H:%M') }}</small>
                                     </div>
                                 </td>
@@ -170,7 +227,7 @@
                     <i class="bi bi-clock"></i>
                 </div>
                 <div class="stats-content">
-                    <h3 class="stats-number">{{ enquiries[0].created_at.strftime('%b %d') if enquiries else 'N/A' }}</h3>
+                    <h3 class="stats-number">{{ enquiries[0].created_at.strftime('%d/%m/%Y') if enquiries else 'N/A' }}</h3>
                     <p class="stats-label">Latest Enquiry</p>
                 </div>
             </div>
@@ -178,4 +235,35 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set max date to today for both date inputs
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('from_date').setAttribute('max', today);
+    document.getElementById('to_date').setAttribute('max', today);
+    
+    // Ensure from_date is not greater than to_date
+    document.getElementById('from_date').addEventListener('change', function() {
+        const fromDate = this.value;
+        const toDateInput = document.getElementById('to_date');
+        if (fromDate) {
+            toDateInput.setAttribute('min', fromDate);
+        } else {
+            toDateInput.removeAttribute('min');
+        }
+    });
+    
+    // Ensure to_date is not less than from_date
+    document.getElementById('to_date').addEventListener('change', function() {
+        const toDate = this.value;
+        const fromDateInput = document.getElementById('from_date');
+        if (toDate) {
+            fromDateInput.setAttribute('max', toDate);
+        } else {
+            fromDateInput.setAttribute('max', today);
+        }
+    });
+});
+</script>
 {% endblock %}

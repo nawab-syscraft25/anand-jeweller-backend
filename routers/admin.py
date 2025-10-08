@@ -10,12 +10,22 @@ import uuid
 from pathlib import Path
 
 from database import get_db
-from models import AdminUser, GoldRate, Store, ContactEnquiry, Guide, About, Team, Mission, Terms, Vision, Award, Achievement, Notification
-from auth import authenticate_user, login_user, logout_user, get_current_user, is_authenticated
+from models import AdminUser, GoldRate, Store, ContactEnquiry, Guide, About, Team, Mission, Terms, Vision, Award, Achievement, Notification, UserRole
+from auth import authenticate_user, login_user, logout_user, get_current_user, is_authenticated, require_super_admin, require_contact_access, is_super_admin
 from jwt_auth import require_admin_auth
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+
+# Template response utility function
+def render_template(template_name: str, context: dict, current_user: AdminUser = None):
+    """Utility function to render templates with consistent context"""
+    if current_user:
+        context.update({
+            "user": current_user,
+            "user_role": current_user.role
+        })
+    return templates.TemplateResponse(template_name, context)
 
 # File upload utility function
 async def save_uploaded_file(file: Optional[UploadFile], folder: str) -> Optional[str]:
@@ -86,7 +96,28 @@ async def admin_dashboard(
     db: Session = Depends(get_db),
     current_user: AdminUser = Depends(require_admin_auth)
 ):
-    # Get stats for dashboard
+    print(f"Dashboard: User {current_user.username} with role {current_user.role}")  # Debug logging
+    
+    # Check user role and show appropriate dashboard
+    if current_user.role == UserRole.CONTACT_MANAGER.value:
+        # Contact Manager sees only contact enquiries dashboard
+        total_enquiries = db.query(ContactEnquiry).count()
+        recent_enquiries = db.query(ContactEnquiry).order_by(desc(ContactEnquiry.created_at)).limit(10).all()
+        
+        jwt_token = request.session.get("jwt_token", "")
+        
+        print(f"Contact Manager Dashboard - Enquiries: {total_enquiries}")  # Debug logging
+        
+        return templates.TemplateResponse("contact_manager_dashboard.html", {
+            "request": request,
+            "user": current_user,
+            "user_role": current_user.role,
+            "total_enquiries": total_enquiries,
+            "recent_enquiries": recent_enquiries,
+            "jwt_token": jwt_token
+        })
+    
+    # Super Admin sees full dashboard
     total_rates = db.query(GoldRate).count()
     total_stores = db.query(Store).count()
     total_enquiries = db.query(ContactEnquiry).count()
@@ -103,46 +134,42 @@ async def admin_dashboard(
     # Get JWT token from session for frontend use
     jwt_token = request.session.get("jwt_token", "")
     
-    return templates.TemplateResponse(
-        "dashboard.html", 
-        {
-            "request": request,
-            "user": current_user,
-            "total_rates": total_rates,
-            "total_stores": total_stores,
-            "total_enquiries": total_enquiries,
-            "total_guides": total_guides,
-            "total_about": total_about,
-            "total_team": total_team,
-            "total_missions": total_missions,
-            "total_terms": total_terms,
-            "total_awards": total_awards,
-            "total_achievements": total_achievements,
-            "total_notifications": total_notifications,
-            "latest_rate": latest_rate,
-            "jwt_token": jwt_token
-        }
-    )
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request,
+        "user": current_user,
+        "user_role": current_user.role,
+        "total_rates": total_rates,
+        "total_stores": total_stores,
+        "total_enquiries": total_enquiries,
+        "total_guides": total_guides,
+        "total_about": total_about,
+        "total_team": total_team,
+        "total_missions": total_missions,
+        "total_terms": total_terms,
+        "total_awards": total_awards,
+        "total_achievements": total_achievements,
+        "total_notifications": total_notifications,
+        "latest_rate": latest_rate,
+        "jwt_token": jwt_token
+    })
 
-# List all gold rates
+# List all gold rates - Super Admin only
 @router.get("/admin/gold-rates", response_class=HTMLResponse)
 async def list_gold_rates(
     request: Request,
-    db: Session = Depends(get_db),
-    current_user: AdminUser = Depends(require_admin_auth)
+    db: Session = Depends(get_db)
 ):
+    current_user = require_super_admin(request, db)
     gold_rates = db.query(GoldRate).order_by(desc(GoldRate.release_datetime)).all()
     jwt_token = request.session.get("jwt_token", "")
     
-    return templates.TemplateResponse(
-        "gold_rates/list.html",
-        {
-            "request": request,
-            "user": current_user,
-            "gold_rates": gold_rates,
-            "jwt_token": jwt_token
-        }
-    )
+    return templates.TemplateResponse("gold_rates/list.html", {
+        "request": request,
+        "user": current_user,
+        "user_role": current_user.role,
+        "gold_rates": gold_rates,
+        "jwt_token": jwt_token
+    })
 
 # Add gold rate form
 @router.get("/admin/gold-rates/add", response_class=HTMLResponse)
@@ -861,6 +888,7 @@ async def list_terms(
         {
             "request": request,
             "user": current_user,
+            "user_role": current_user.role,
             "terms": terms,
             "jwt_token": jwt_token
         }
@@ -880,6 +908,7 @@ async def add_terms_form(
         {
             "request": request,
             "user": current_user,
+            "user_role": current_user.role,
             "jwt_token": jwt_token
         }
     )
@@ -939,6 +968,7 @@ async def edit_terms_form(
         {
             "request": request,
             "user": current_user,
+            "user_role": current_user.role,
             "terms": terms,
             "jwt_token": jwt_token
         }
@@ -1519,6 +1549,7 @@ async def list_notifications(
     return templates.TemplateResponse("notifications/list.html", {
         "request": request,
         "user": current_user,
+        "user_role": current_user.role,
         "notifications": notifications,
         "page_title": "Notifications Management",
         "jwt_token": jwt_token
@@ -1535,6 +1566,7 @@ async def add_notification_form(
     return templates.TemplateResponse("notifications/add.html", {
         "request": request,
         "user": current_user,
+        "user_role": current_user.role,
         "page_title": "Add New Notification",
         "jwt_token": jwt_token
     })
@@ -1596,6 +1628,7 @@ async def edit_notification_form(
     return templates.TemplateResponse("notifications/edit.html", {
         "request": request,
         "user": current_user,
+        "user_role": current_user.role,
         "notification": notification,
         "page_title": f"Edit Notification - {notification.title}",
         "jwt_token": jwt_token
@@ -1666,17 +1699,62 @@ async def delete_notification(
 @router.get("/admin/contact-enquiries", response_class=HTMLResponse)
 async def list_contact_enquiries(
     request: Request, 
+    from_date: str = None,
+    to_date: str = None,
+    subject: str = None,
     db: Session = Depends(get_db),
     current_user: AdminUser = Depends(require_admin_auth)
 ):
-    """List all contact enquiries"""
-    enquiries = db.query(ContactEnquiry).order_by(desc(ContactEnquiry.created_at)).all()
+    """List all contact enquiries with optional date and subject filtering"""
+    # Start with base query
+    query = db.query(ContactEnquiry)
+    
+    # Apply date filters if provided
+    if from_date:
+        try:
+            from datetime import datetime
+            from_datetime = datetime.strptime(from_date, '%Y-%m-%d')
+            query = query.filter(ContactEnquiry.created_at >= from_datetime)
+        except ValueError:
+            pass  # Invalid date format, ignore filter
+    
+    if to_date:
+        try:
+            from datetime import datetime
+            to_datetime = datetime.strptime(to_date, '%Y-%m-%d')
+            # Add 1 day to include the entire to_date
+            to_datetime = to_datetime.replace(hour=23, minute=59, second=59)
+            query = query.filter(ContactEnquiry.created_at <= to_datetime)
+        except ValueError:
+            pass  # Invalid date format, ignore filter
+    
+    # Apply subject filter if provided
+    if subject:
+        if subject.lower() == 'no subject':
+            query = query.filter(ContactEnquiry.subject.is_(None))
+        else:
+            query = query.filter(ContactEnquiry.subject == subject)
+    
+    enquiries = query.order_by(desc(ContactEnquiry.created_at)).all()
+    
+    # Get all unique subjects for the dropdown
+    all_subjects = db.query(ContactEnquiry.subject).distinct().all()
+    available_subjects = []
+    for subj in all_subjects:
+        if subj[0]:  # If subject is not None
+            available_subjects.append(subj[0])
+        else:
+            available_subjects.append('No Subject')
+    available_subjects = sorted(set(available_subjects))
+    
     jwt_token = request.session.get("jwt_token", "")
     
     return templates.TemplateResponse("contact_enquiries/list.html", {
         "request": request,
         "user": current_user,
+        "user_role": current_user.role,
         "enquiries": enquiries,
+        "available_subjects": available_subjects,
         "page_title": "Contact Enquiries Management",
         "jwt_token": jwt_token
     })
@@ -1699,6 +1777,7 @@ async def view_contact_enquiry(
     return templates.TemplateResponse("contact_enquiries/view.html", {
         "request": request,
         "user": current_user,
+        "user_role": current_user.role,
         "enquiry": enquiry,
         "page_title": f"Contact Enquiry - {enquiry.name}",
         "jwt_token": jwt_token
@@ -1721,3 +1800,90 @@ async def delete_contact_enquiry(
     db.commit()
     
     return RedirectResponse(url="/admin/contact-enquiries", status_code=302)
+
+@router.get("/admin/contact-enquiries/export")
+async def export_contact_enquiries_csv(
+    request: Request, 
+    from_date: str = None,
+    to_date: str = None,
+    subject: str = None,
+    db: Session = Depends(get_db),
+    current_user: AdminUser = Depends(require_admin_auth)
+):
+    """Export contact enquiries to CSV with optional date and subject filtering"""
+    from fastapi.responses import StreamingResponse
+    import csv
+    import io
+    from datetime import datetime
+    
+    # Start with base query (same filtering logic as list route)
+    query = db.query(ContactEnquiry)
+    
+    # Apply date filters if provided
+    if from_date:
+        try:
+            from_datetime = datetime.strptime(from_date, '%Y-%m-%d')
+            query = query.filter(ContactEnquiry.created_at >= from_datetime)
+        except ValueError:
+            pass  # Invalid date format, ignore filter
+    
+    if to_date:
+        try:
+            to_datetime = datetime.strptime(to_date, '%Y-%m-%d')
+            # Add 1 day to include the entire to_date
+            to_datetime = to_datetime.replace(hour=23, minute=59, second=59)
+            query = query.filter(ContactEnquiry.created_at <= to_datetime)
+        except ValueError:
+            pass  # Invalid date format, ignore filter
+    
+    # Apply subject filter if provided
+    if subject:
+        if subject.lower() == 'no subject':
+            query = query.filter(ContactEnquiry.subject.is_(None))
+        else:
+            query = query.filter(ContactEnquiry.subject == subject)
+    
+    enquiries = query.order_by(desc(ContactEnquiry.created_at)).all()
+    
+    # Create CSV content
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write CSV headers  
+    writer.writerow([
+        'ID', 'Name', 'Email', 'Phone Number', 'Subject', 
+        'Preferred Store', 'Preferred Date/Time', 'Created At'
+    ])
+    
+    # Write enquiry data with DD/MM/YYYY format
+    for enquiry in enquiries:
+        writer.writerow([
+            enquiry.id,
+            enquiry.name,
+            enquiry.email,
+            enquiry.phone_number,
+            enquiry.subject or 'Contact enquiry',
+            enquiry.preferred_store or '',
+            enquiry.preferred_date_time or '',
+            enquiry.created_at.strftime('%d/%m/%Y %H:%M:%S') if enquiry.created_at else ''
+        ])
+    
+    output.seek(0)
+    
+    # Generate filename with current date and filters
+    current_date = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"contact_enquiries_{current_date}"
+    if from_date or to_date:
+        date_range = f"_{from_date or 'start'}_to_{to_date or 'end'}"
+        filename += date_range
+    if subject:
+        subject_clean = subject.replace(' ', '_').replace('/', '_')
+        filename += f"_subject_{subject_clean}"
+    filename += ".csv"
+    
+    # Return CSV as downloadable file
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

@@ -1,6 +1,11 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, UniqueConstraint, Text
 from sqlalchemy.sql import func
 from database import Base
+from enum import Enum
+
+class UserRole(Enum):
+    SUPER_ADMIN = "super_admin"
+    CONTACT_MANAGER = "contact_manager"
 
 class AdminUser(Base):
     __tablename__ = "admin_users"
@@ -8,6 +13,17 @@ class AdminUser(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
+    role = Column(String, nullable=False, default="super_admin")  # Store as string to avoid SQLAlchemy enum issues
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    
+    @property
+    def role_enum(self):
+        """Get role as UserRole enum"""
+        return UserRole(self.role) if self.role else UserRole.SUPER_ADMIN
+    
+    def set_role(self, role: UserRole):
+        """Set role from UserRole enum"""
+        self.role = role.value
 
 class GoldRate(Base):
     __tablename__ = "gold_rates"

@@ -449,12 +449,12 @@ async def get_all_rates(
 
 # Pydantic models for request/response
 class ContactEnquiryCreate(BaseModel):
-    name: str = Field(..., min_length=2, max_length=100, description="Customer's full name")
+    name: Optional[str] = Field(None, min_length=1, max_length=100, description="Customer's full name")
     phone_number: str = Field(..., min_length=10, max_length=15, description="Phone number with country code")
-    email: EmailStr = Field(..., description="Valid email address")
+    email: Optional[str] = Field(None, max_length=100, description="Email address (if available)")
     subject: Optional[str] = Field("Contact enquiry", max_length=200, description="Subject of the enquiry")
-    preferred_store: str = Field(..., min_length=5, max_length=200, description="Name of preferred store")
-    preferred_date_time: str = Field(..., min_length=10, max_length=100, description="Preferred appointment date and time")
+    preferred_store: Optional[str] = Field(None, min_length=5, max_length=200, description="Name of preferred store")
+    preferred_date_time: Optional[str] = Field(None, min_length=10, max_length=100, description="Preferred appointment date and time")
     no_of_people: Optional[int] = Field(1, ge=1, le=50, description="Number of people for the appointment")
     message: Optional[str] = Field("NaN", max_length=1000, description="Additional message or requirements")
 
